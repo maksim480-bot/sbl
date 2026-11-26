@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#05090C">
+<title>SBL — Science-Based Lifting</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Oswald:wght@400;500;600;700&family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink-900:#05090C; --ink-850:#071118; --ink-800:#0A1620; --ink-700:#0E2029;
+  --ink-600:#12303C; --petrol:#0B2A38; --petrol-hi:#12475C;
+  --line:#17323F; --line-hi:#215064;
+  --crimson:#FF3B47; --crimson-deep:#B3121F; --crimson-soft:#FF7A82;
+  --lime:#C4F53C; --lime-deep:#8FBF12;
+  --cyan:#37D9F0; --amber:#FFB23C; --magenta:#FF4FA8; --violet:#9B7BFF;
+  --success:#33E08D; --danger:#FF4D4D;
+  --bone:#F4EDE4; --slate:#8FA7B4; --slate-dim:#5E7684;
+  --f-display:'Unbounded','Oswald',system-ui,sans-serif;
+  --f-head:'Oswald','Arial Narrow',system-ui,sans-serif;
+  --f-body:'Manrope',system-ui,-apple-system,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --top:58px; --tg-top:0px; --tg-bot:0px;
+  --r:14px;
+  --sh-1:0 2px 10px rgba(0,0,0,.45);
+  --sh-2:0 18px 48px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{scrollbar-width:thin;scrollbar-color:var(--crimson-deep) var(--ink-850)}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-track{background:var(--ink-850);border-left:1px solid var(--line)}
+*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--crimson),var(--crimson-deep));border:2px solid var(--ink-850);border-radius:6px}
+*::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--lime),var(--lime-deep))}
+*::-webkit-scrollbar-corner{background:var(--ink-850)}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--ink-900);color:var(--bone);font-family:var(--f-body);font-size:15px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;padding:0}
+a{color:var(--cyan);text-decoration:none}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:4px}
+.bg-field{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+   radial-gradient(120% 80% at 8% -10%, #0F3B4C 0%, rgba(15,59,76,0) 55%),
+   radial-gradient(90% 70% at 100% 0%, #2A0A16 0%, rgba(42,10,22,0) 50%),
+   radial-gradient(100% 90% at 50% 110%, #10262F 0%, rgba(16,38,47,0) 60%),
+   linear-gradient(175deg,#061017 0%,#05090C 45%,#07131A 100%);}
+.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(70px);opacity:.5}
+.aurora i{position:absolute;display:block;border-radius:50%;mix-blend-mode:screen}
+.aurora i:nth-child(1){width:46vw;height:46vw;left:-8%;top:2%;background:radial-gradient(circle,#0E6C86,transparent 66%);animation:drift1 26s ease-in-out infinite}
+.aurora i:nth-child(2){width:38vw;height:38vw;right:-6%;top:24%;background:radial-gradient(circle,#8C1020,transparent 66%);animation:drift2 32s ease-in-out infinite}
+.aurora i:nth-child(3){width:30vw;height:30vw;left:34%;bottom:-8%;background:radial-gradient(circle,#4C6B08,transparent 68%);animation:drift3 38s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(7vw,5vh,0)}}
+@keyframes drift2{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-6vw,-6vh,0)}}
+@keyframes drift3{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(4vw,-4vh,0)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.22;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+.scan{position:fixed;left:0;right:0;height:1px;z-index:1;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(55,217,240,.35),transparent);animation:scanmove 9s linear infinite}
+@keyframes scanmove{0%{top:-2%}100%{top:102%}}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:60;height:calc(var(--top) + var(--tg-top));padding-top:var(--tg-top);
+  display:flex;align-items:center;gap:10px;padding-left:12px;padding-right:12px;
+  background:linear-gradient(180deg,rgba(5,9,12,.94),rgba(5,9,12,.72));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.tb-back{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line-hi);border-radius:10px;background:var(--ink-800);color:var(--bone);transition:.16s;flex:0 0 auto}
+.tb-back:hover{border-color:var(--crimson);color:var(--crimson);transform:translateX(-2px)}
+.tb-back[hidden]{display:none}
+.tb-title{font-family:var(--f-head);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:13px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.tb-mark{font-family:var(--f-display);font-weight:800;font-size:15px;letter-spacing:.18em;color:var(--bone)}
+.tb-mark span{color:var(--crimson)}
+.tb-btn{width:36px;height:34px;display:grid;place-items:center;border:1px solid var(--line-hi);border-radius:10px;background:var(--ink-800);transition:.16s;flex:0 0 auto}
+.tb-btn:hover{border-color:var(--cyan);background:var(--ink-700)}
+.tb-btn.on{border-color:var(--lime);color:var(--lime);box-shadow:0 0 0 1px rgba(196,245,60,.18),0 0 16px rgba(196,245,60,.14) inset}
+.tb-btn.off{color:var(--slate-dim)}
+.shell{position:relative;z-index:5;display:grid;grid-template-columns:1fr;padding-top:calc(var(--top) + var(--tg-top));min-height:100%}
+main{width:100%;max-width:640px;margin:0 auto;padding:16px 14px calc(90px + var(--tg-bot));min-width:0}
+.rail{display:none}
+@media(min-width:1180px){
+  .shell{grid-template-columns:250px minmax(0,1fr) 290px;gap:20px;max-width:1340px;margin:0 auto;padding-left:20px;padding-right:20px}
+  main{padding-top:22px}
+  .rail{display:block;position:sticky;top:calc(var(--top) + 18px);align-self:start;max-height:calc(100vh - var(--top) - 40px);overflow:auto;padding:22px 4px 20px}
+}
+.rail-brand{font-family:var(--f-display);font-weight:800;font-size:40px;letter-spacing:.1em;line-height:1;margin-bottom:6px}
+.rail-brand span{color:var(--crimson)}
+.rail-sub{font-family:var(--f-mono);font-size:10.5px;color:var(--slate-dim);letter-spacing:.16em;text-transform:uppercase;margin-bottom:20px}
+.rail-nav{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.rail-nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid transparent;border-radius:10px;font-family:var(--f-head);text-transform:uppercase;letter-spacing:.1em;font-size:12.5px;color:var(--slate);transition:.16s;text-align:left;width:100%}
+.rail-nav button:hover{color:var(--bone);background:var(--ink-800);border-color:var(--line)}
+.rail-nav button.active{color:var(--ink-900);background:linear-gradient(100deg,var(--lime),var(--lime-deep));font-weight:600}
+.rail-nav i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6;flex:0 0 auto}
+.rail-card{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(160deg,var(--ink-800),var(--ink-850));padding:13px;margin-bottom:12px}
+.rail-card h4{margin:0 0 9px;font-family:var(--f-head);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
+.rail-ref{display:block;width:100%;text-align:left;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px;color:var(--slate);transition:.15s}
+.rail-ref:last-child{border-bottom:0}
+.rail-ref:hover{color:var(--bone);padding-left:5px}
+.rail-ref b{color:var(--lime);font-family:var(--f-mono);font-size:11px}
+.kicker{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.kicker::before{content:"";width:18px;height:1px;background:var(--cyan);opacity:.7}
+h1,h2,h3,h4{font-family:var(--f-head);font-weight:600;margin:0}
+h2{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
+h3{font-size:16px;text-transform:uppercase;letter-spacing:.08em}
+.mono{font-family:var(--f-mono)}
+.panel{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(165deg,rgba(14,32,41,.92),rgba(7,17,24,.94));box-shadow:var(--sh-1)}
+.pad{padding:14px}
+.row{display:flex;align-items:center;gap:10px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grow{flex:1;min-width:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.enter{animation:enter .42s cubic-bezier(.2,.7,.3,1) both}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.home{padding-top:12px}
+.wordmark{position:relative;font-family:var(--f-display);font-weight:800;font-size:clamp(76px,26vw,132px);line-height:.86;letter-spacing:.02em;margin:14px 0 0;
+  background:linear-gradient(103deg,#FFFFFF 0%,#F4EDE4 26%,#FF7A82 52%,#FF3B47 66%,#C4F53C 100%);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:220% 100%;animation:sheen 9s ease-in-out infinite}
+@keyframes sheen{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.wordmark::after{content:"";position:absolute;left:2px;right:34%;bottom:-6px;height:2px;background:linear-gradient(90deg,var(--crimson),var(--lime),transparent)}
+.home-sub{font-family:var(--f-mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--slate);margin:16px 0 4px}
+.home-line{font-size:14px;color:var(--slate);max-width:44ch;margin:8px 0 20px}
+.home-line b{color:var(--bone);font-weight:700}
+.tiles{display:flex;flex-direction:column;gap:11px}
+.tile{position:relative;display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px 15px;border:1px solid var(--line-hi);border-radius:var(--r);overflow:hidden;
+  transition:transform .18s cubic-bezier(.2,.7,.3,1),border-color .18s,box-shadow .18s;background:linear-gradient(120deg,rgba(11,42,56,.9),rgba(7,17,24,.92))}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent,var(--crimson))}
+.tile::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,var(--accent,var(--crimson)),transparent 68%);opacity:.13;transition:.25s}
+.tile:hover{transform:translateY(-3px);border-color:var(--accent,var(--crimson));box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.tile:hover::after{opacity:.26;transform:scale(1.15)}
+.tile:active{transform:translateY(-1px) scale(.995)}
+.tile-ico{width:52px;height:52px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;border:1px solid var(--line-hi);background:var(--ink-850)}
+.tile-t{display:block;font-family:var(--f-head);font-size:20px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.tile-d{display:block;font-size:12.5px;color:var(--slate);margin-top:3px}
+.tile-n{display:block;font-family:var(--f-mono);font-size:10px;color:var(--slate-dim);letter-spacing:.16em}
+.tile-arrow{color:var(--accent,var(--crimson));flex:0 0 auto;transition:.2s}
+.tile:hover .tile-arrow{transform:translateX(4px)}
+.home-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center}
+.linkbtn{font-family:var(--f-head);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate);border:1px solid var(--line);border-radius:999px;padding:7px 13px;transition:.16s;background:rgba(10,22,32,.6)}
+.linkbtn:hover{color:var(--lime);border-color:var(--lime-deep)}
+.ticker{margin-top:18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0;overflow:hidden}
+.ticker-in{display:inline-flex;gap:26px;white-space:nowrap;animation:tick 34s linear infinite;font-family:var(--f-mono);font-size:11px;color:var(--slate-dim)}
+.ticker-in b{color:var(--cyan);font-weight:600}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.searchbar{display:flex;align-items:center;gap:9px;border:1px solid var(--line-hi);border-radius:12px;background:var(--ink-850);padding:10px 12px;margin-bottom:12px}
+.searchbar input{flex:1;background:none;border:0;outline:none;font-size:14.5px;min-width:0}
+.searchbar input::placeholder{color:var(--slate-dim)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 8px;margin-bottom:6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{height:0}
+.chip{flex:0 0 auto;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--ink-850);font-family:var(--f-head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);transition:.15s;white-space:nowrap}
+.chip:hover{border-color:var(--line-hi);color:var(--bone)}
+.chip.on{background:linear-gradient(100deg,var(--crimson),var(--crimson-deep));border-color:var(--crimson);color:#fff;font-weight:600}
+.chip.on.lime{background:linear-gradient(100deg,var(--lime),var(--lime-deep));border-color:var(--lime);color:#07131A}
+.mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:520px){.mgrid{grid-template-columns:repeat(3,1fr)}}
+.mcard{position:relative;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:linear-gradient(170deg,var(--ink-800),var(--ink-850));transition:.2s;text-align:left;padding:0;display:block;width:100%}
+.mcard:hover{border-color:var(--crimson);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.mcard .fig{display:grid;place-items:center;height:112px;background:
+  radial-gradient(70% 70% at 50% 40%,rgba(255,59,71,.14),transparent 70%),
+  repeating-linear-gradient(0deg,rgba(23,50,63,.5) 0 1px,transparent 1px 14px),
+  repeating-linear-gradient(90deg,rgba(23,50,63,.5) 0 1px,transparent 1px 14px),var(--ink-900)}
+.mcard svg{height:106px;width:auto;display:block}
+.mcard-b{display:block;padding:9px 11px 11px;border-top:1px solid var(--line)}
+.mcard-t{display:block;font-family:var(--f-head);font-size:14.5px;text-transform:uppercase;letter-spacing:.06em}
+.mcard-s{display:block;font-family:var(--f-mono);font-size:10px;color:var(--slate-dim);margin-top:3px;letter-spacing:.08em}
+.mcard-badge{position:absolute;top:8px;right:8px;font-family:var(--f-mono);font-size:10px;padding:3px 7px;border-radius:6px;background:rgba(5,9,12,.8);border:1px solid var(--line-hi);color:var(--lime)}
+.anat-wrap{position:relative;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:radial-gradient(80% 60% at 50% 30%,rgba(18,71,92,.35),transparent 70%),var(--ink-900)}
+.anat-wrap svg{display:block;width:100%;height:auto;max-height:340px;margin:0 auto}
+.anat-side{position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:2}
+.anat-legend{position:absolute;bottom:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:6px;z-index:2}
+.anat-hint{position:absolute;top:12px;right:12px;z-index:2;font-family:var(--f-mono);font-size:9.5px;color:var(--slate-dim);letter-spacing:.08em;background:rgba(5,9,12,.7);border:1px solid var(--line);padding:4px 7px;border-radius:6px}
+.lg{font-family:var(--f-mono);font-size:10px;padding:4px 8px;border-radius:6px;background:rgba(5,9,12,.82);border:1px solid var(--line-hi);color:var(--slate)}
+.lg.hot{border-color:var(--crimson);color:var(--crimson-soft)}
+.musc{transition:fill .3s,opacity .3s}
+.musc.tap{cursor:pointer}
+.musc.tap:hover{opacity:1!important}
+.body-out{fill:#0C1D26;stroke:#1E4152;stroke-width:1.1}
+.exlist{display:flex;flex-direction:column;gap:9px}
+.excard{display:flex;gap:11px;align-items:center;width:100%;text-align:left;padding:10px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(120deg,rgba(14,32,41,.85),rgba(7,17,24,.9));transition:.18s}
+.excard:hover{border-color:var(--line-hi);transform:translateX(3px);background:linear-gradient(120deg,rgba(18,48,60,.9),rgba(9,22,30,.92))}
+.exthumb{width:62px;height:62px;flex:0 0 auto;border-radius:10px;background:
+  repeating-linear-gradient(0deg,rgba(23,50,63,.55) 0 1px,transparent 1px 10px),
+  repeating-linear-gradient(90deg,rgba(23,50,63,.55) 0 1px,transparent 1px 10px),var(--ink-900);border:1px solid var(--line);display:grid;place-items:center}
+.exthumb svg{width:58px;height:58px}
+.exname{font-family:var(--f-head);font-size:14.5px;letter-spacing:.03em;line-height:1.25}
+.extags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.tag{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;padding:2px 6px;border-radius:5px;background:var(--ink-700);color:var(--slate);border:1px solid var(--line)}
+.tag.hi{color:var(--crimson-soft);border-color:rgba(255,59,71,.4);background:rgba(255,59,71,.08)}
+.tier{width:30px;height:30px;flex:0 0 auto;display:grid;place-items:center;border-radius:9px;font-family:var(--f-display);font-weight:800;font-size:14px}
+.tier.S{background:linear-gradient(140deg,var(--lime),var(--lime-deep));color:#07131A;box-shadow:0 0 18px rgba(196,245,60,.28)}
+.tier.A{background:linear-gradient(140deg,var(--cyan),#128CA3);color:#04222A}
+.tier.B{background:linear-gradient(140deg,#2C4C5C,#1A3543);color:var(--slate)}
+.fav{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;color:var(--slate-dim);transition:.15s;flex:0 0 auto}
+.fav:hover{color:var(--amber);background:rgba(255,178,60,.1)}
+.fav.on{color:var(--amber)}
+.scorebar{height:3px;border-radius:2px;background:var(--ink-700);overflow:hidden;margin-top:7px;width:100%}
+.scorebar i{display:block;height:100%;background:linear-gradient(90deg,var(--crimson),var(--amber),var(--lime))}
+.empty{padding:26px 16px;text-align:center;border:1px dashed var(--line-hi);border-radius:var(--r);color:var(--slate);font-size:13.5px}
+.lab{position:relative;border:1px solid var(--line-hi);border-radius:var(--r) var(--r) 0 0;overflow:hidden;background:var(--ink-900);box-shadow:var(--sh-2)}
+.lab canvas{display:block;width:100%;height:300px;touch-action:pan-y;cursor:pointer}
+@media(min-width:520px){.lab canvas{height:340px}}
+.lab-hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.hud-b{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;padding:5px 9px;border-radius:7px;background:rgba(5,9,12,.78);border:1px solid var(--line-hi);color:var(--slate);text-transform:uppercase}
+.hud-b b{color:var(--lime);font-weight:600}
+.hud-b.phase{color:var(--crimson-soft);border-color:rgba(255,59,71,.45)}
+.lab-foot{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;gap:9px}
+.tension{flex:1;height:6px;border-radius:4px;background:rgba(5,9,12,.8);border:1px solid var(--line-hi);overflow:hidden}
+.tension i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--lime),var(--crimson));transition:width .08s linear}
+.playbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--line-hi);background:rgba(5,9,12,.85);color:var(--lime);transition:.16s;flex:0 0 auto}
+.playbtn:hover{border-color:var(--lime);box-shadow:0 0 18px rgba(196,245,60,.2)}
+.ctrls{border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r) var(--r);background:linear-gradient(180deg,var(--ink-800),var(--ink-850));padding:12px}
+.ctrl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+@media(min-width:560px){.ctrl-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ctrl{min-width:0}
+.ctrl-l{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-family:var(--f-head);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:5px}
+.ctrl-l b{font-family:var(--f-mono);font-size:11.5px;color:var(--lime);font-weight:600}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:none;outline:none;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--petrol-hi),var(--ink-700));border:1px solid var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;margin-top:-7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF,var(--crimson) 62%);border:1px solid #FF9AA1;box-shadow:0 0 12px rgba(255,59,71,.5);cursor:grab;transition:.12s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.18)}
+input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:var(--ink-700);border:1px solid var(--line)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--crimson);border:1px solid #FF9AA1}
+input[type=range].lime::-webkit-slider-thumb{background:radial-gradient(circle at 35% 30%,#FFF,var(--lime) 62%);border-color:var(--lime);box-shadow:0 0 12px rgba(196,245,60,.5)}
+input[type=range].cyan::-webkit-slider-thumb{background:radial-gradient(circle at 35% 30%,#FFF,var(--cyan) 62%);border-color:var(--cyan);box-shadow:0 0 12px rgba(55,217,240,.5)}
+.toggles{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;padding-top:11px;border-top:1px dashed var(--line)}
+.tg{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--ink-850);font-family:var(--f-head);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);transition:.15s}
+.tg:hover{border-color:var(--line-hi);color:var(--bone)}
+.tg i{width:8px;height:8px;border-radius:50%;background:var(--slate-dim);transition:.15s}
+.tg.on{color:var(--bone);border-color:var(--lime-deep);background:rgba(196,245,60,.07)}
+.tg.on i{background:var(--lime);box-shadow:0 0 9px var(--lime)}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:10px;border:1px solid var(--line-hi);background:var(--ink-700);font-family:var(--f-head);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--bone);transition:.16s}
+.btn:hover{border-color:var(--cyan);background:var(--ink-600);transform:translateY(-1px)}
+.btn.pri{background:linear-gradient(100deg,var(--crimson),var(--crimson-deep));border-color:var(--crimson);color:#fff;font-weight:600}
+.btn.lime{background:linear-gradient(100deg,var(--lime),var(--lime-deep));border-color:var(--lime);color:#07131A;font-weight:700}
+.btn.ghost{background:transparent}
+.btn.sm{padding:7px 11px;font-size:11.5px}
+.ev{border-left:2px solid var(--cyan);padding:9px 0 9px 11px;margin:9px 0;background:linear-gradient(90deg,rgba(55,217,240,.07),transparent)}
+.ev-t{font-size:13.5px;color:var(--bone);line-height:1.45}
+.ev-c{font-family:var(--f-mono);font-size:10.5px;color:var(--cyan);margin-top:5px}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:1fr 44px;gap:9px;align-items:center}
+.bar-l{font-size:12.5px;color:var(--slate);margin-bottom:4px;display:flex;justify-content:space-between}
+.bar-t{height:7px;border-radius:4px;background:var(--ink-700);overflow:hidden;border:1px solid var(--line)}
+.bar-t i{display:block;height:100%;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.bar-v{font-family:var(--f-mono);font-size:12px;color:var(--bone);text-align:right}
+.heads{display:flex;flex-direction:column;gap:7px}
+.headbtn{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--ink-850);transition:.16s;width:100%;text-align:left}
+.headbtn:hover{border-color:var(--line-hi);background:var(--ink-800)}
+.headbtn.on{border-color:var(--crimson);background:rgba(255,59,71,.09)}
+.headbtn .dot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.headbtn .nm{font-size:13.5px;flex:1}
+.headbtn .pc{font-family:var(--f-mono);font-size:11px;color:var(--slate)}
+.deep{font-family:var(--f-mono);font-size:9px;color:var(--violet);border:1px solid rgba(155,123,255,.4);padding:1px 5px;border-radius:4px}
+.seg{display:flex;gap:4px;padding:4px;border:1px solid var(--line-hi);border-radius:12px;background:var(--ink-850)}
+.seg button{flex:1;padding:9px 6px;border-radius:9px;font-family:var(--f-head);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);transition:.16s;white-space:nowrap}
+.seg button:hover{color:var(--bone)}
+.seg button.on{background:linear-gradient(100deg,var(--crimson),var(--crimson-deep));color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(255,59,71,.24)}
+.seg.lime button.on{background:linear-gradient(100deg,var(--lime),var(--lime-deep));color:#07131A}
+.seg.cyanb button.on{background:linear-gradient(100deg,var(--cyan),#128CA3);color:#04222A}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--ink-850)}
+.stepper button{width:32px;height:32px;display:grid;place-items:center;color:var(--slate);transition:.14s;font-size:17px;line-height:1}
+.stepper button:hover{background:var(--ink-600);color:var(--lime)}
+.stepper span{flex:1;text-align:center;font-family:var(--f-mono);font-size:13.5px;color:var(--bone)}
+select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--ink-850);color:var(--bone);outline:none;font-size:13px;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238FA7B4' stroke-width='1.6'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+select:hover{border-color:var(--line-hi)}
+.kcal-hero{position:relative;overflow:hidden;border:1px solid var(--line-hi);border-radius:var(--r);padding:16px;background:linear-gradient(140deg,rgba(18,71,92,.6),rgba(7,17,24,.95) 60%)}
+.kcal-hero::after{content:"";position:absolute;right:-60px;top:-70px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--hero-accent,var(--crimson)),transparent 66%);opacity:.2}
+.kcal-n{font-family:var(--f-display);font-weight:800;font-size:clamp(44px,14vw,62px);line-height:1;background:linear-gradient(100deg,#FFF,var(--hero-accent,var(--crimson)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kcal-u{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);margin-top:6px}
+.delta{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid var(--line-hi);background:rgba(5,9,12,.6);color:var(--bone);margin-top:10px}
+.macro-row{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+.macro-row:last-child{border-bottom:0}
+.macro-dot{width:12px;height:12px;border-radius:4px}
+.macro-n{font-family:var(--f-head);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.macro-s{font-family:var(--f-mono);font-size:10.5px;color:var(--slate-dim);margin-top:2px}
+.macro-g{font-family:var(--f-display);font-weight:600;font-size:21px;text-align:right;line-height:1}
+.macro-g small{font-family:var(--f-mono);font-size:10px;color:var(--slate);display:block;font-weight:400;margin-top:3px}
+.note{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45;border:1px solid;display:flex;gap:9px;align-items:flex-start}
+.note.ok{border-color:rgba(51,224,141,.35);background:rgba(51,224,141,.07);color:#B6F2D5}
+.note.warn{border-color:rgba(255,178,60,.4);background:rgba(255,178,60,.08);color:#FFDCA8}
+.note.bad{border-color:rgba(255,77,77,.4);background:rgba(255,77,77,.08);color:#FFC2C2}
+.note.info{border-color:rgba(55,217,240,.35);background:rgba(55,217,240,.07);color:#BFEEF7}
+.note b{color:#fff}
+.cap{position:relative;height:4px;border-radius:3px;background:var(--ink-700);margin-top:-2px}
+.cap i{position:absolute;top:-3px;width:2px;height:10px;background:var(--amber);border-radius:1px}
+.cap-l{font-family:var(--f-mono);font-size:9.5px;color:var(--amber);letter-spacing:.06em;margin-top:4px}
+.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+@media(min-width:480px){.mini-grid{grid-template-columns:repeat(4,1fr)}}
+.mini{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--ink-850)}
+.mini-v{font-family:var(--f-display);font-weight:600;font-size:19px;line-height:1.1}
+.mini-l{font-family:var(--f-mono);font-size:9.5px;color:var(--slate-dim);letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+.planrow{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--ink-850);transition:.15s}
+.planrow:hover{border-color:var(--line-hi)}
+.planrow .nm{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.iconbtn{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;border:1px solid var(--line);color:var(--slate);transition:.15s;flex:0 0 auto}
+.iconbtn:hover{color:var(--bone);border-color:var(--line-hi);background:var(--ink-700)}
+.iconbtn.danger:hover{color:var(--danger);border-color:var(--danger)}
+.badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;padding:4px 8px;border-radius:999px;border:1px solid var(--line-hi);color:var(--slate);background:var(--ink-850)}
+.pill.lime{color:var(--lime);border-color:var(--lime-deep)}
+.pill.cy{color:var(--cyan);border-color:rgba(55,217,240,.4)}
+.pill.cr{color:var(--crimson-soft);border-color:rgba(255,59,71,.4)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+@media(max-width:400px){.grid2{grid-template-columns:1fr}}
+.chartbox{border:1px solid var(--line);border-radius:12px;background:var(--ink-850);padding:12px}
+.chartbox svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:9px}
+.legend span{display:flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:10px;color:var(--slate)}
+.legend i{width:9px;height:9px;border-radius:2px;display:block}
+.scrim{position:fixed;inset:0;z-index:80;background:rgba(3,7,10,.72);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:.25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;left:0;right:0;bottom:0;z-index:90;max-height:82vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--ink-800),var(--ink-900));border-top:1px solid var(--line-hi);border-radius:18px 18px 0 0;transform:translateY(102%);transition:transform .34s cubic-bezier(.2,.8,.25,1);box-shadow:0 -20px 60px rgba(0,0,0,.7)}
+.drawer.on{transform:none}
+@media(min-width:1180px){.drawer{left:auto;right:24px;bottom:24px;width:520px;border-radius:18px;border:1px solid var(--line-hi);max-height:76vh}}
+.drawer-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.drawer-b{overflow:auto;padding:14px 16px calc(20px + var(--tg-bot))}
+.refitem{padding:11px 0;border-bottom:1px dashed var(--line)}
+.refitem:last-child{border-bottom:0}
+.refitem .cite{font-size:13px;color:var(--bone);line-height:1.45}
+.refitem .take{font-size:12.5px;color:var(--slate);margin-top:5px}
+.refitem .id{font-family:var(--f-mono);font-size:10px;color:var(--lime);letter-spacing:.1em}
+.toast-wrap{position:fixed;left:12px;right:12px;bottom:calc(16px + var(--tg-bot));z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:11px;max-width:520px;width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line-hi);background:linear-gradient(120deg,var(--ink-700),var(--ink-850));box-shadow:var(--sh-2);animation:toastin .3s cubic-bezier(.2,.8,.25,1) both;font-size:13.5px}
+.toast.out{animation:toastout .25s ease-in forwards}
+@keyframes toastin{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes toastout{to{opacity:0;transform:translateY(12px) scale(.97)}}
+.toast .undo{font-family:var(--f-head);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);border:1px solid var(--lime-deep);padding:5px 10px;border-radius:8px;flex:0 0 auto}
+.toast .undo:hover{background:rgba(196,245,60,.12)}
+.toast .dot{width:8px;height:8px;border-radius:50%;background:var(--lime);flex:0 0 auto;box-shadow:0 0 10px var(--lime)}
+.toast.warn .dot{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.toast.bad .dot{background:var(--danger);box-shadow:0 0 10px var(--danger)}
+.inline-code{font-family:var(--f-mono);font-size:12px;background:var(--ink-700);border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:var(--lime)}
+@media(prefers-reduced-motion:reduce){
+  .aurora i,.scan,.wordmark,.ticker-in{animation:none!important}
+  .enter{animation-duration:.01s}
+  *{transition-duration:.06s!important}
+}
+</style>
+</head>
+<body>
+<div class="bg-field"></div>
+<div class="aurora"><i></i><i></i><i></i></div>
+<div class="grain"></div>
+<div class="scan"></div>
+
+<header class="topbar">
+  <button class="tb-back" id="backBtn" hidden aria-label="Назад">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+  </button>
+  <div class="tb-title" id="tbTitle"><span class="tb-mark">S<span>B</span>L</span></div>
+  <button class="tb-btn on" id="soundBtn" aria-label="Звук включён" title="Звук">
+    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h3l4-3.5v12l-4-3.5H4z"/><path d="M14 7c1.2 1.6 1.2 4.4 0 6" class="wave"/><path d="M16.4 5c2.2 2.8 2.2 7.2 0 10" class="wave"/></svg>
+  </button>
+  <button class="tb-btn" id="refBtn" aria-label="Источники" title="Источники">
+    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4.5h9a2 2 0 012 2V16H6a2 2 0 01-2-2z"/><path d="M7 8h6M7 11h4"/></svg>
+  </button>
+</header>
+
+<div class="shell">
+  <aside class="rail rail-left">
+    <div class="rail-brand">S<span>B</span>L</div>
+    <div class="rail-sub">Science-Based Lifting</div>
+    <nav class="rail-nav" id="railNav"></nav>
+    <div class="rail-card"><h4>Сессия</h4><div class="mono" style="font-size:11.5px;color:var(--slate);line-height:1.9" id="railStats"></div></div>
+    <div class="rail-card"><h4>Принцип</h4><div style="font-size:12.5px;color:var(--slate);line-height:1.55">Достаточно — не значит максимально. Порог стимула достигается раньше, чем порог усталости.</div></div>
+  </aside>
+  <main id="app" role="main"></main>
+  <aside class="rail rail-right">
+    <div class="rail-card"><h4>Доказательная лента</h4><div id="railRefs"></div></div>
+    <div class="rail-card"><h4>Легенда тиров</h4>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="row"><span class="tier S">S</span><span style="font-size:12px;color:var(--slate)">Лучший стимул на единицу усталости</span></div>
+        <div class="row"><span class="tier A">A</span><span style="font-size:12px;color:var(--slate)">Рабочая база, надёжно</span></div>
+        <div class="row"><span class="tier B">B</span><span style="font-size:12px;color:var(--slate)">Ситуативно / есть минус</span></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<section class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-h">
+    <div><div class="kicker" style="margin:0">Evidence base</div><h3 style="margin-top:6px">Источники</h3></div>
+    <button class="iconbtn" id="drawerClose" aria-label="Закрыть"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>
+  </div>
+  <div class="drawer-b" id="drawerBody"></div>
+</section>
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+"use strict";
+(function(){
+/* ---------- utils ---------- */
+var $=function(s,r){return (r||document).querySelector(s);};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+var clamp=function(v,a,b){return Math.min(b,Math.max(a,v));};
+var lerp=function(a,b,t){return a+(b-a)*t;};
+var rnd=function(a,b){return a+Math.random()*(b-a);};
+var num=function(n,d){return (Math.round(n*Math.pow(10,d||0))/Math.pow(10,d||0)).toFixed(d||0).replace('.',',');};
+var trim=function(n,d){var s=num(n,d);if(s.indexOf(',')>=0){s=s.replace(/0+$/,'').replace(/,$/,'');}return s;};
+var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+var easeIO=function(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;};
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('sbl.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
+  set:function(k,v){try{localStorage.setItem('sbl.'+k,JSON.stringify(v));}catch(e){}}
+};
+
+/* ---------- telegram ---------- */
+var TG=(window.Telegram&&window.Telegram.WebApp)?window.Telegram.WebApp:null;
+function tgInit(){
+  if(!TG)return;
+  try{
+    TG.ready();TG.expand();
+    if(TG.setHeaderColor)TG.setHeaderColor('#05090C');
+    if(TG.setBackgroundColor)TG.setBackgroundColor('#05090C');
+    if(TG.setBottomBarColor)TG.setBottomBarColor('#05090C');
+    if(TG.disableVerticalSwipes)TG.disableVerticalSwipes();
+    var applyVp=function(){
+      var h=TG.viewportStableHeight||TG.viewportHeight||window.innerHeight;
+      document.documentElement.style.setProperty('--tg-bot',(TG.safeAreaInset&&TG.safeAreaInset.bottom?TG.safeAreaInset.bottom:0)+'px');
+      document.documentElement.style.setProperty('--tg-top',(TG.contentSafeAreaInset&&TG.contentSafeAreaInset.top?TG.contentSafeAreaInset.top:0)+'px');
+      document.body.style.minHeight=h+'px';
+    };
+    applyVp();
+    if(TG.onEvent){TG.onEvent('viewportChanged',applyVp);TG.onEvent('safeAreaChanged',applyVp);}
+    if(TG.BackButton&&TG.BackButton.onClick)TG.BackButton.onClick(function(){nav.back();});
+  }catch(e){}
+}
+function haptic(kind){
+  if(!TG||!TG.HapticFeedback)return;
+  try{
+    if(kind==='success'||kind==='error'||kind==='warning')TG.HapticFeedback.notificationOccurred(kind);
+    else TG.HapticFeedback.impactOccurred(kind||'light');
+  }catch(e){}
+}
+function tgBackSync(depth){ if(!TG||!TG.BackButton)return; try{ if(depth>1)TG.BackButton.show(); else TG.BackButton.hide(); }catch(e){} }
+function cloudSave(k,v){ if(TG&&TG.CloudStorage&&TG.CloudStorage.setItem){try{TG.CloudStorage.setItem('sbl_'+k,JSON.stringify(v));}catch(e){}} }
+
+/* ---------- sound ---------- */
+var Sound=(function(){
+  var ctx=null,master=null,on=store.get('sound',true);
+  function ensure(){
+    if(ctx)return ctx;
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return null;
+    try{ctx=new AC();master=ctx.createGain();master.gain.value=.16;master.connect(ctx.destination);}catch(e){ctx=null;}
+    return ctx;
+  }
+  function resume(){ if(ctx&&ctx.state==='suspended'){try{ctx.resume();}catch(e){}} }
+  function env(node,t,a,d,peak){var g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d);node.connect(g);g.connect(master);return g;}
+  function tone(freq,dur,type,peak,slide){
+    if(!on)return; if(!ensure())return; resume();
+    var t=ctx.currentTime,o=ctx.createOscillator();
+    o.type=type||'sine';o.frequency.setValueAtTime(freq,t);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,slide),t+dur);
+    env(o,t,.008,dur,peak||.5);o.start(t);o.stop(t+dur+.06);
+  }
+  function noise(dur,freq,peak){
+    if(!on)return; if(!ensure())return; resume();
+    var t=ctx.currentTime,len=Math.floor(ctx.sampleRate*dur),buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+    for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+    var src=ctx.createBufferSource();src.buffer=buf;
+    var bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=freq;bp.Q.value=1.1;
+    src.connect(bp);env(bp,t,.01,dur,peak||.3);src.start(t);
+  }
+  return{
+    isOn:function(){return on;},
+    toggle:function(){on=!on;store.set('sound',on);if(on){ensure();resume();tone(660,.09,'triangle',.4);}return on;},
+    tap:function(){tone(880,.045,'square',.16);},
+    tick:function(){tone(1320,.035,'square',.12);},
+    lock:function(){tone(180,.16,'sine',.5,90);noise(.09,900,.16);},
+    stretch:function(){noise(.16,420,.13);tone(120,.14,'sine',.22);},
+    chime:function(){tone(740,.1,'triangle',.34);setTimeout(function(){tone(1108,.16,'triangle',.3);},90);}
+  };
+})();
+
+/* ---------- evidence ---------- */
+var REFS={
+  mifflin1990:{c:'Mifflin MD, St Jeor ST et al. A new predictive equation for resting energy expenditure. Am J Clin Nutr. 1990;51(2):241–247.',t:'Уравнение RMR по массе, росту, возрасту и полу — базовая оценка обмена покоя.'},
+  morton2018:{c:'Morton RW, Murphy KT, McKellar SR et al. Br J Sports Med. 2018;52(6):376–384.',t:'Мета-анализ 49 РКИ: прирост безжировой массы от белка выходит на плато около 1,62 г/кг/сут (верхняя граница 95% ДИ — 2,20).'},
+  helms2014:{c:'Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation. J Int Soc Sports Nutr. 2014;11:20.',t:'На дефиците белок 2,3–3,1 г/кг сухой массы; темп снижения 0,5–1% массы тела в неделю.'},
+  iraki2019:{c:'Iraki J, Fitschen P, Espinar S, Helms E. Nutrition recommendations for bodybuilders in the off-season. Sports. 2019;7(7):154.',t:'Профицит 10–20% от поддержки, темп набора 0,25–0,5% массы в неделю; быстрее — растёт доля жира.'},
+  barakat2020:{c:'Barakat C, Pearson J, Escalante G et al. Body recomposition: can trained individuals build muscle and lose fat at the same time? Strength Cond J. 2020;42(5):79–92.',t:'Рекомпозиция реальна при небольшом дефиците, высоком белке и прогрессии нагрузок.'},
+  garthe2013:{c:'Garthe I, Raastad T, Refsnes PE, Sundgot-Borgen J. Int J Sport Nutr Exerc Metab. 2013;23(2):121–131.',t:'Медленный набор даёт лучший состав тела, чем агрессивный, при том же тренировочном плане.'},
+  trexler2014:{c:'Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss. J Int Soc Sports Nutr. 2014;11:7.',t:'Затяжной агрессивный дефицит снижает расход энергии — плато лечится не урезанием, а паузой.'},
+  timing2018:{c:'Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? J Int Soc Sports Nutr. 2018;15:10.',t:'≈0,4 г/кг на приём, минимум 4 приёма — практичная схема распределения белка.'},
+  iom2005:{c:'Institute of Medicine. Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat. 2005.',t:'Клетчатка ≈14 г на каждые 1000 ккал рациона.'},
+  kreider2017:{c:'Kreider RB, Kalman DS, Antonio J et al. ISSN position stand: creatine supplementation. J Int Soc Sports Nutr. 2017;14:18.',t:'Моногидрат креатина 3–5 г/сут — самая доказанная добавка для силовых.'},
+  maeo2021:{c:'Maeo S, Meng H, Yuhang S et al. Greater hamstrings muscle hypertrophy but similar damage protection after training at long muscle lengths. Med Sci Sports Exerc. 2021;53(8):1678–1690.',t:'Сгибания ног сидя (таз согнут, бицепс бедра растянут) дали заметно больший рост, чем лёжа.'},
+  maeo2022:{c:'Maeo S, Wu Y, Huang M et al. Triceps brachii hypertrophy is substantially greater after elbow extension training performed in the overhead versus neutral arm position. Eur J Sport Sci. 2022;22(8):1240–1250.',t:'Разгибания из-за головы дали больший рост длинной головки трицепса, чем разгибания вниз.'},
+  pedrosa2022:{c:'Pedrosa GF, Lima FV, Schoenfeld BJ et al. Partial range of motion training elicits favorable improvements in muscular adaptations when carried out at long muscle lengths. Eur J Sport Sci. 2022;22(8):1250–1260.',t:'Частичные повторения в растянутой части амплитуды не хуже, а иногда лучше полных.'},
+  kassiano2023:{c:'Kassiano W, Costa B, Nunes JP et al. Which range of motion should be used during resistance training for the triceps surae? 2023.',t:'Для икроножных выгодна работа в растянутой позиции (нижняя часть амплитуды).'},
+  kubo2019:{c:'Kubo K, Ikebukuro T, Yata H. Effects of squat training with different depths on lower limb muscle volumes. Eur J Appl Physiol. 2019;119(9):1933–1942.',t:'Глубокий присед даёт больший рост ягодичных и приводящих, чем неглубокий.'},
+  contreras2015:{c:'Contreras B, Vigotsky AD, Schoenfeld BJ et al. J Appl Biomech. 2015;31(6):452–458.',t:'Ягодичный мост даёт высокий пик активации в укороченной позиции — дополняет, а не заменяет присед.'},
+  wakahara2013:{c:'Wakahara T, Fukutani A, Kawakami Y, Yanai T. Nonuniform muscle hypertrophy: its relation to muscle activation in training session. Eur J Appl Physiol. 2013;113(11):2791–2802.',t:'Разные упражнения растят разные участки одной мышцы — отсюда деление на пучки.'},
+  zabaleta2021:{c:'Zabaleta-Korta A, Fernández-Peña E, Santos-Concejero J. Regional hypertrophy: the inhomogeneous muscle growth. 2021.',t:'Обзор регионарной гипертрофии: профиль нагрузки и длина мышцы определяют, какой участок растёт.'},
+  volume2017:{c:'Schoenfeld BJ, Ogborn D, Krieger JW. Dose-response relationship between weekly resistance training volume and increases in muscle mass. J Sports Sci. 2017;35(11):1073–1082.',t:'≥10 подходов на мышцу в неделю — ориентир; отдача убывает после ~20.'},
+  freq2016:{c:'Schoenfeld BJ, Ogborn D, Krieger JW. Effects of resistance training frequency on measures of muscle hypertrophy. Sports Med. 2016;46(11):1689–1697.',t:'Частота 2 раза в неделю на мышцу лучше 1 при равном объёме.'},
+  load2021:{c:'Schoenfeld BJ, Grgic J, Van Every DW, Plotkin DL. Loading recommendations for muscle strength, hypertrophy, and local endurance. Sports. 2021;9(2):32.',t:'30–80% 1ПМ дают схожую гипертрофию при работе близко к отказу.'},
+  refalo2023:{c:'Refalo MC, Helms ER, Trexler ET et al. Influence of proximity to failure on muscle hypertrophy. Sports Med. 2023.',t:'1–3 повтора в запасе — достаточная близость к отказу; отказ в каждом подходе не нужен.'},
+  fonseca2014:{c:'Fonseca RM, Roschel H, Tricoli V et al. J Strength Cond Res. 2014;28(11):3085–3092.',t:'Вариативность упражнений растит квадрицепс равномернее, чем один присед.'},
+  krieger2010:{c:'Krieger JW. Single vs. multiple sets of resistance exercise for muscle hypertrophy: a meta-analysis. J Strength Cond Res. 2010;24(4):1150–1159.',t:'2–3 подхода дают больший рост, чем 1; дальше отдача снижается.'}
+};
+var REFLABEL={helms2014:'Helms 2014',morton2018:'Morton 2018',barakat2020:'Barakat 2020',iraki2019:'Iraki 2019'};
+
+/* ---------- muscles ---------- */
+var GROUPS=[
+  {id:'chest',n:'Грудь',lat:'Pectoralis major',side:'front',box:'42 62 136 108',accent:'#FF3B47',
+   heads:[{id:'chest_up',n:'Ключичная (верх)',c:'#FF3B47'},{id:'chest_mid',n:'Грудинная (середина)',c:'#FF7A82'},{id:'chest_low',n:'Рёберная (низ)',c:'#B3121F'}]},
+  {id:'delts',n:'Дельты',lat:'Deltoideus',side:'front',box:'40 60 140 90',accent:'#FFB23C',
+   heads:[{id:'delt_ant',n:'Передний пучок',c:'#FFB23C'},{id:'delt_lat',n:'Средний пучок',c:'#C4F53C'},{id:'delt_post',n:'Задний пучок',c:'#FF4FA8'}]},
+  {id:'back',n:'Спина',lat:'Latissimus / trapezius',side:'back',box:'40 56 140 150',accent:'#37D9F0',
+   heads:[{id:'lats',n:'Широчайшие',c:'#37D9F0'},{id:'traps_up',n:'Верх трапеции',c:'#9B7BFF'},{id:'traps_mid',n:'Середина трапеции / ромбовидные',c:'#33E08D'},{id:'erectors',n:'Разгибатели спины',c:'#FFB23C'}]},
+  {id:'biceps',n:'Бицепс',lat:'Biceps brachii',side:'front',box:'38 88 130 100',accent:'#C4F53C',
+   heads:[{id:'bi_long',n:'Длинная головка',c:'#C4F53C'},{id:'bi_short',n:'Короткая головка',c:'#8FBF12'},{id:'brachialis',n:'Брахиалис',c:'#33E08D'}]},
+  {id:'triceps',n:'Трицепс',lat:'Triceps brachii',side:'back',box:'38 84 130 100',accent:'#FF4FA8',
+   heads:[{id:'tri_long',n:'Длинная головка',c:'#FF4FA8'},{id:'tri_lat',n:'Латеральная',c:'#FF7A82'},{id:'tri_med',n:'Медиальная',c:'#9B7BFF'}]},
+  {id:'quads',n:'Квадрицепс',lat:'Quadriceps femoris',side:'front',box:'52 190 116 120',accent:'#37D9F0',
+   heads:[{id:'q_rect',n:'Прямая',c:'#37D9F0'},{id:'q_lat',n:'Латеральная',c:'#C4F53C'},{id:'q_med',n:'Медиальная',c:'#FFB23C'},{id:'q_int',n:'Промежуточная',c:'#9B7BFF',deep:true}]},
+  {id:'hams',n:'Бицепс бедра',lat:'Hamstrings',side:'back',box:'52 226 116 110',accent:'#9B7BFF',
+   heads:[{id:'ham_bf',n:'Двуглавая бедра',c:'#9B7BFF'},{id:'ham_st',n:'Полусухожильная',c:'#37D9F0'},{id:'ham_sm',n:'Полуперепончатая',c:'#33E08D',deep:true}]},
+  {id:'glutes',n:'Ягодицы',lat:'Gluteus maximus / medius',side:'back',box:'50 176 120 80',accent:'#FF3B47',
+   heads:[{id:'gl_max',n:'Большая ягодичная',c:'#FF3B47'},{id:'gl_med',n:'Средняя ягодичная',c:'#FFB23C'},{id:'gl_min',n:'Малая ягодичная',c:'#FF4FA8',deep:true}]},
+  {id:'calves',n:'Икры',lat:'Triceps surae',side:'back',box:'54 292 112 100',accent:'#C4F53C',
+   heads:[{id:'gas_med',n:'Икроножная, медиальная',c:'#C4F53C'},{id:'gas_lat',n:'Икроножная, латеральная',c:'#8FBF12'},{id:'soleus',n:'Камбаловидная',c:'#37D9F0'},{id:'tibialis',n:'Передняя большеберцовая',c:'#FFB23C'}]},
+  {id:'abs',n:'Пресс',lat:'Rectus / obliquus',side:'front',box:'62 118 96 96',accent:'#FFB23C',
+   heads:[{id:'abs_rect',n:'Прямая живота',c:'#FFB23C'},{id:'abs_obl',n:'Косые',c:'#FF4FA8'},{id:'abs_trans',n:'Поперечная',c:'#9B7BFF',deep:true}]},
+  {id:'fore',n:'Предплечья',lat:'Antebrachium',side:'front',box:'26 128 110 90',accent:'#33E08D',
+   heads:[{id:'wr_flex',n:'Сгибатели запястья',c:'#33E08D'},{id:'wr_ext',n:'Разгибатели запястья',c:'#37D9F0'},{id:'brachioradialis',n:'Брахиорадиалис',c:'#C4F53C'}]},
+  {id:'add',n:'Приводящие',lat:'Adductores',side:'front',box:'62 190 96 80',accent:'#FF4FA8',
+   heads:[{id:'add_mag',n:'Большая приводящая',c:'#FF4FA8'},{id:'add_long',n:'Длинная приводящая',c:'#FF7A82'},{id:'add_brev',n:'Короткая приводящая',c:'#9B7BFF',deep:true}]}
+];
+var G={},HEADNAME={},HEADCOLOR={},HEADGROUP={};
+GROUPS.forEach(function(g){
+  G[g.id]=g;
+  g.heads.forEach(function(h){HEADNAME[h.id]=h.n;HEADCOLOR[h.id]=h.c;HEADGROUP[h.id]=g.id;});
+});
+var FRONT={
+  chest_up:'M108,86 C97,84 85,88 78,96 C86,104 98,107 108,105 Z',
+  chest_mid:'M108,107 C97,107 85,104 76,99 C74,112 82,123 94,126 C102,127 107,121 108,116 Z',
+  chest_low:'M108,118 C102,125 94,128 86,127 C90,135 100,139 108,135 Z',
+  delt_ant:'M76,78 C66,80 60,89 61,99 C68,103 76,99 79,92 C80,85 80,80 76,78 Z',
+  delt_lat:'M66,80 C58,84 55,94 57,103 C62,105 66,101 66,94 Z',
+  bi_long:'M70,105 C63,110 59,121 61,133 C67,138 74,133 75,123 C76,114 75,109 70,105 Z',
+  bi_short:'M75,110 C71,116 70,126 72,134 C77,136 79,128 79,120 Z',
+  brachialis:'M59,124 C55,130 54,138 56,144 C61,145 63,138 62,130 Z',
+  brachioradialis:'M57,142 C52,150 50,160 51,170 C56,171 59,163 60,153 Z',
+  wr_flex:'M53,152 C48,162 45,176 45,188 C50,190 55,182 56,170 C57,160 57,155 53,152 Z',
+  wr_ext:'M47,154 C42,164 40,178 41,189 C45,191 48,183 49,172 Z',
+  abs_rect:'M100,128 L110,128 L110,192 L102,192 C98,178 97,150 100,128 Z',
+  abs_obl:'M97,132 C89,141 86,159 90,177 C96,179 99,168 99,152 Z',
+  abs_trans:'M95,146 C90,154 89,166 92,176 C96,176 98,166 98,154 Z',
+  q_rect:'M97,208 C91,222 89,248 91,272 C97,278 103,272 103,254 C103,232 103,216 97,208 Z',
+  q_lat:'M85,210 C77,226 75,252 79,274 C87,278 91,270 89,250 C88,232 89,218 85,210 Z',
+  q_med:'M99,258 C93,266 93,281 97,289 C105,291 107,280 105,268 Z',
+  q_int:'M92,224 C88,238 87,256 89,270 C93,270 95,256 95,240 Z',
+  add_mag:'M105,206 C99,215 97,233 101,247 C107,247 109,232 109,216 Z',
+  add_long:'M100,208 C95,216 94,230 97,242 C101,241 102,228 102,214 Z',
+  add_brev:'M103,204 C99,210 98,220 100,228 C104,227 105,216 105,208 Z',
+  tibialis:'M84,298 C79,314 79,338 83,356 C88,357 91,347 89,330 C88,314 89,304 84,298 Z'
+};
+var BACK={
+  traps_up:'M110,66 C99,70 87,78 79,88 C91,93 105,90 110,86 Z',
+  traps_mid:'M110,92 C100,94 89,96 81,96 C87,110 100,117 110,115 Z',
+  lats:'M108,117 C97,117 85,111 77,103 C73,125 79,151 93,167 C103,173 108,164 108,150 Z',
+  erectors:'M103,132 L110,132 L110,192 L104,192 C100,174 100,150 103,132 Z',
+  delt_post:'M76,78 C66,80 60,89 61,99 C68,103 76,99 79,92 C80,85 80,80 76,78 Z',
+  delt_lat:'M66,80 C58,84 55,94 57,103 C62,105 66,101 66,94 Z',
+  tri_long:'M72,105 C64,111 60,124 62,137 C68,141 75,135 76,124 C77,114 76,109 72,105 Z',
+  tri_lat:'M60,108 C55,116 53,128 55,138 C60,139 63,130 62,119 Z',
+  tri_med:'M67,128 C63,133 62,140 64,145 C69,145 71,138 70,131 Z',
+  gl_max:'M108,197 C96,197 84,203 82,217 C82,233 95,243 108,241 Z',
+  gl_med:'M101,192 C91,192 83,198 82,208 C90,206 99,201 101,196 Z',
+  gl_min:'M97,196 C90,197 85,202 85,208 C91,207 96,203 97,199 Z',
+  ham_bf:'M86,244 C78,258 76,282 80,300 C88,304 92,296 90,278 C89,262 90,252 86,244 Z',
+  ham_st:'M100,244 C94,258 92,282 96,300 C104,302 106,292 104,274 C103,258 104,250 100,244 Z',
+  ham_sm:'M96,250 C92,262 91,280 94,296 C98,296 100,284 99,268 Z',
+  gas_med:'M100,306 C94,318 94,338 98,352 C106,352 108,340 106,324 Z',
+  gas_lat:'M86,306 C80,318 80,338 84,352 C92,352 92,338 90,322 Z',
+  soleus:'M93,340 C89,352 89,366 93,374 C100,374 102,362 100,348 Z',
+  wr_ext:'M47,154 C42,164 40,178 41,189 C45,191 48,183 49,172 Z',
+  wr_flex:'M53,152 C48,162 45,176 45,188 C50,190 55,182 56,170 Z'
+};
+function anatSVG(opts){
+  opts=opts||{};
+  var side=opts.side||'front',hot=opts.hot||[],sel=opts.sel||null,box=opts.box||'0 0 220 400';
+  var idp='a'+Math.random().toString(36).slice(2,7),map=side==='front'?FRONT:BACK;
+  var body='M110,16 c-12,0 -21,9 -21,22 c0,10 4,18 9,22 l0,9 c-11,3 -22,7 -30,13 c-8,6 -12,15 -14,25 l-6,38 c-2,10 -5,20 -8,29 l-4,13 c-1,4 4,6 6,2 l7,-14 l3,-12 l2,16 l-3,32 l-2,30 c-1,10 0,22 2,32 l6,36 l-2,34 l-4,32 c-1,5 1,8 5,8 l9,0 c3,0 5,-3 4,-7 l-3,-30 l4,-34 l4,-30 l5,-28 l5,28 l4,30 l4,34 l-3,30 c-1,4 1,7 4,7 l9,0 c4,0 6,-3 5,-8 l-4,-32 l-2,-34 l6,-36 c2,-10 3,-22 2,-32 l-2,-30 l-3,-32 l2,-16 l3,12 l7,14 c2,4 7,2 6,-2 l-4,-13 c-3,-9 -6,-19 -8,-29 l-6,-38 c-2,-10 -6,-19 -14,-25 c-8,-6 -19,-10 -30,-13 l0,-9 c5,-4 9,-12 9,-22 c0,-13 -9,-22 -21,-22 z';
+  var out='<svg viewBox="'+box+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Анатомическая карта">';
+  out+='<defs><linearGradient id="'+idp+'m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF6A73"/><stop offset="1" stop-color="#B3121F"/></linearGradient>'+
+    '<linearGradient id="'+idp+'s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E7FF7A"/><stop offset="1" stop-color="#8FBF12"/></linearGradient>'+
+    '<filter id="'+idp+'g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  out+='<path class="body-out" d="'+body+'" opacity=".5"/>';
+  Object.keys(map).forEach(function(k){
+    var isHot=hot.indexOf(k)>=0,isSel=(sel===k);
+    var fill=isSel?('url(#'+idp+'s)'):(isHot?('url(#'+idp+'m)'):'#122733');
+    var stroke=isSel?'#C4F53C':(isHot?'#FF9AA1':'#1B3B4A');
+    var filt=(isHot||isSel)?('url(#'+idp+'g)'):'none';
+    var op=(isHot||isSel)?1:.65;
+    var attrs=opts.interactive?(' class="musc tap" data-act="head" data-h="'+k+'"'):(' class="musc"');
+    var d=map[k];
+    out+='<path'+attrs+' d="'+d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+((isHot||isSel)?1:.7)+'" filter="'+filt+'" opacity="'+op+'"/>';
+    out+='<g transform="translate(220,0) scale(-1,1)"><path'+attrs+' d="'+d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+((isHot||isSel)?1:.7)+'" filter="'+filt+'" opacity="'+op+'"/></g>';
+  });
+  if(opts.lines){
+    out+='<g stroke="#215064" stroke-width=".5" opacity=".5" fill="none" pointer-events="none"><path d="M110,60 L110,300"/><path d="M40,100 L180,100"/><path d="M40,200 L180,200"/><path d="M40,300 L180,300"/></g>';
+  }
+  return out+'</svg>';
+}
+
+/* ---------- motion rig ---------- */
+var T={};
+function defT(n,a,b,cfg){T[n]={a:a,b:b,cfg:cfg||{}};}
+defT('curl',[48,56,47,30,47,22,50,42,52,53,50,74,50,90],[48,56,46,30,46,22,50,42,50,31,50,74,50,90],{eq:'bar'});
+defT('hammer',[48,56,47,30,47,22,50,42,52,53,50,74,50,90],[48,56,46,30,46,22,50,42,50,31,50,74,50,90],{eq:'db'});
+defT('incline_curl',[46,62,40,40,37,33,38,54,34,64,58,70,62,90],[46,62,40,40,37,33,40,52,44,42,58,70,62,90],{eq:'db',bench:'incline'});
+defT('preacher',[46,62,44,38,42,30,56,50,60,60,58,66,60,88],[46,62,44,38,42,30,56,50,52,40,58,66,60,88],{eq:'bar',pad:[52,46,66,54]});
+defT('overhead_ext',[48,58,48,32,50,24,44,20,38,32,50,74,50,90],[48,58,48,32,50,24,46,18,50,6,50,74,50,90],{eq:'cable',anchor:[12,88]});
+defT('overhead_db',[48,58,48,32,50,24,44,20,38,32,50,74,50,90],[48,58,48,32,50,24,46,18,50,6,50,74,50,90],{eq:'db'});
+defT('pushdown',[46,58,50,30,51,22,50,44,56,50,50,74,50,90],[46,58,50,30,51,22,50,44,56,63,50,74,50,90],{eq:'cable',anchor:[80,8]});
+defT('skull',[58,66,34,64,26,62,34,50,28,60,70,74,74,90],[58,66,34,64,26,62,34,50,34,44,70,74,74,90],{eq:'bar',bench:'flat'});
+defT('press_flat',[58,66,34,64,26,62,42,70,36,62,70,74,74,90],[58,66,34,64,26,62,38,56,36,46,70,74,74,90],{eq:'bar',bench:'flat'});
+defT('press_incline',[58,68,38,52,32,46,44,60,40,54,70,76,74,90],[58,68,38,52,32,46,40,46,38,36,70,76,74,90],{eq:'db',bench:'incline'});
+defT('closegrip',[58,66,34,64,26,62,40,68,36,62,70,74,74,90],[58,66,34,64,26,62,37,56,36,47,70,74,74,90],{eq:'bar',bench:'flat'});
+defT('fly_low',[48,58,48,32,48,24,60,46,70,56,50,74,50,90],[48,58,48,32,48,24,58,36,52,28,50,74,50,90],{eq:'cable',anchor:[88,88]});
+defT('pecdeck',[48,64,48,38,48,30,60,44,70,42,60,70,62,88],[48,64,48,38,48,30,58,42,50,40,60,70,62,88],{eq:'machine',seat:true});
+defT('rev_pecdeck',[48,64,48,38,50,30,56,42,66,42,60,70,62,88],[48,64,48,38,50,30,46,40,34,40,60,70,62,88],{eq:'machine',seat:true});
+defT('facepull',[48,58,48,32,48,24,56,40,70,34,50,74,50,90],[48,58,48,32,48,24,50,34,44,28,50,74,50,90],{eq:'cable',anchor:[86,14]});
+defT('lateral',[48,56,48,30,48,22,52,44,54,56,50,74,50,90],[48,56,48,30,48,22,62,34,74,32,50,74,50,90],{eq:'db'});
+defT('lateral_cable',[48,56,48,30,48,22,52,44,54,56,50,74,50,90],[48,56,48,30,48,22,62,34,74,32,50,74,50,90],{eq:'cable',anchor:[14,90]});
+defT('front_raise',[48,56,48,30,48,22,50,44,54,56,50,74,50,90],[48,56,48,30,48,22,56,34,66,28,50,74,50,90],{eq:'cable',anchor:[16,90]});
+defT('upright',[48,56,48,30,48,22,52,44,54,58,50,74,50,90],[48,56,48,30,48,22,60,32,52,34,50,74,50,90],{eq:'bar'});
+defT('pulldown',[48,66,48,40,50,32,54,26,58,12,60,72,62,90],[48,66,48,40,50,32,52,46,50,34,60,72,62,90],{eq:'cable',anchor:[58,2],seat:true});
+defT('pullup',[50,62,50,36,50,28,52,22,50,8,52,78,48,88],[50,48,50,24,50,16,56,32,50,8,54,64,48,74],{eq:'barfixed',barY:8});
+defT('row_sup',[56,66,38,48,32,42,40,60,40,72,62,78,66,90],[56,66,38,48,32,42,50,56,44,56,62,78,66,90],{eq:'db',bench:'incline'});
+defT('row_cable',[46,70,44,44,44,36,52,54,66,58,62,74,78,76],[46,70,44,44,44,36,40,52,46,56,62,74,78,76],{eq:'cable',anchor:[90,62],seat:true});
+defT('row_one',[48,58,46,32,46,24,54,44,66,52,52,74,54,90],[48,58,46,32,46,24,42,44,46,48,52,74,54,90],{eq:'cable',anchor:[90,50]});
+defT('pullover',[48,58,46,32,46,24,52,24,56,10,50,74,50,90],[48,58,46,32,46,24,52,44,56,56,50,74,50,90],{eq:'cable',anchor:[86,6]});
+defT('shrug',[48,56,48,32,48,24,50,44,52,58,50,74,50,90],[48,56,48,26,48,18,50,40,52,54,50,74,50,90],{eq:'bar'});
+defT('rdl',[42,58,52,42,56,36,56,54,58,66,46,74,48,90],[48,54,48,28,48,20,50,42,52,54,50,72,50,90],{eq:'bar'});
+defT('backext',[50,58,38,66,32,62,42,62,46,58,62,72,72,86],[50,58,36,44,30,40,40,50,44,46,62,72,72,86],{eq:'body',pad:[54,64,78,74]});
+defT('squat',[44,70,46,44,46,36,40,48,44,42,58,78,52,90],[46,54,48,28,48,20,42,34,46,28,52,72,50,90],{eq:'barback'});
+defT('hack',[44,70,46,44,46,36,42,50,46,46,58,78,52,90],[46,54,48,28,48,20,44,34,48,30,52,72,50,90],{eq:'machine',sled:true});
+defT('legpress',[38,70,30,54,26,48,34,64,38,70,52,60,60,52],[38,70,30,54,26,48,34,64,38,70,58,66,72,62],{eq:'machine',sled:true});
+defT('legext',[46,64,46,38,46,30,50,52,52,62,60,66,58,84],[46,64,46,38,46,30,50,52,52,62,60,66,76,62],{eq:'machine',seat:true,padAnkle:true});
+defT('split',[46,66,46,40,46,32,48,52,50,64,60,76,60,90,44,52,46,64,36,74,26,76],[46,54,46,28,46,20,48,40,50,52,58,70,60,90,44,40,46,52,36,68,26,76],{eq:'db',pad:[18,72,34,78]});
+defT('legcurl_seat',[46,64,46,38,46,30,50,52,52,62,62,66,76,62],[46,64,46,38,46,30,50,52,52,62,62,66,70,82],{eq:'machine',seat:true,padAnkle:true});
+defT('legcurl_lying',[52,68,30,66,24,64,34,72,38,76,66,68,82,68],[52,68,30,66,24,64,34,72,38,76,66,68,70,52],{eq:'machine',bench:'flat',padAnkle:true});
+defT('nordic',[50,62,50,36,50,28,54,48,58,58,50,86,36,88],[56,74,70,84,76,86,66,80,74,86,50,86,36,88],{eq:'body',pad:[28,84,44,90]});
+defT('hipthrust',[52,74,32,56,26,52,36,64,40,70,68,66,70,88],[52,58,32,56,26,52,36,62,40,66,68,66,70,88],{eq:'barhip',bench:'flat'});
+defT('kickback',[48,58,44,36,42,30,46,48,48,58,52,74,56,88,44,48,46,58,46,74,46,90],[48,58,44,36,42,30,46,48,48,58,56,66,70,74,44,48,46,58,46,74,46,90],{eq:'cable',anchor:[14,90],cableAt:'ankle'});
+defT('abduct',[48,64,48,38,48,30,50,52,52,62,56,68,56,86],[48,64,48,38,48,30,50,52,52,62,68,66,68,84],{eq:'machine',seat:true,padKnee:true});
+defT('adduct',[48,64,48,38,48,30,50,52,52,62,68,66,68,84],[48,64,48,38,48,30,50,52,52,62,55,68,55,86],{eq:'machine',seat:true,padKnee:true});
+defT('calf_stand',[48,58,48,32,48,24,50,44,52,56,50,74,50,90],[48,52,48,26,48,18,50,38,52,50,50,68,50,84],{eq:'body',toe:[57,92]});
+defT('calf_seat',[44,64,44,38,44,30,48,52,54,60,62,66,62,88],[44,64,44,38,44,30,48,52,54,60,62,66,62,82],{eq:'machine',seat:true,toe:[69,90],padKnee:true});
+defT('tibialis',[48,56,48,30,48,22,50,42,52,54,50,74,50,90],[48,56,48,30,48,22,50,42,52,54,50,74,50,90],{eq:'body',toeMove:true,toe:[58,92]});
+defT('crunch_cable',[48,62,48,36,48,28,50,30,52,22,46,86,34,88],[48,64,52,52,54,46,54,46,56,40,46,86,34,88],{eq:'cable',anchor:[80,6]});
+defT('legraise',[50,60,50,34,50,26,52,20,50,8,52,76,52,90],[50,58,50,34,50,26,52,20,50,8,62,58,70,50],{eq:'barfixed',barY:8});
+defT('wheel',[52,78,66,70,72,66,72,78,78,88,40,86,28,88],[46,68,50,56,52,50,54,68,60,88,40,86,28,88],{eq:'wheel'});
+defT('woodchop',[48,58,48,32,48,24,56,30,70,18,50,74,50,90],[48,58,48,32,48,24,48,52,36,62,50,74,50,90],{eq:'cable',anchor:[88,8]});
+defT('wrist',[46,64,46,38,46,30,54,56,66,66,60,68,62,88],[46,64,46,38,46,30,54,56,66,56,60,68,62,88],{eq:'bar',seat:true});
+defT('copenhagen',[50,72,28,62,22,58,30,78,30,88,64,62,76,58,30,78,30,88,62,74,74,78],[50,62,28,58,22,54,30,76,30,88,64,58,76,56,30,76,30,88,62,72,74,76],{eq:'body',pad:[68,56,88,62]});
+defT('sissy',[46,62,40,38,38,30,42,48,44,58,62,78,52,90],[48,54,46,28,46,20,46,40,48,50,56,72,50,90],{eq:'body'});
+defT('dip',[50,68,46,42,45,34,50,58,58,52,42,78,34,84],[50,58,46,34,45,26,52,46,58,52,44,72,36,78],{eq:'bars'});
+defT('pushup',[52,80,28,70,22,68,30,78,26,88,66,82,82,88],[52,70,28,62,22,60,28,72,26,88,66,78,82,88],{eq:'body'});
+
+function poseAt(tpl,t){
+  var a=T[tpl].a,b=T[tpl].b,out=[],i;
+  for(i=0;i<14;i++)out.push(lerp(a[i],b[i],t));
+  if(a.length>=22&&b.length>=22){for(i=14;i<22;i++)out.push(lerp(a[i],b[i],t));}
+  else{var off=T[tpl].cfg.farOff||-4;out.push(out[6]+off,out[7]+1,out[8]+off,out[9]+1,out[10]+off,out[11],out[12]+off,out[13]);}
+  return out;
+}
+function P(p){return{hip:[p[0],p[1]],neck:[p[2],p[3]],head:[p[4],p[5]],eA:[p[6],p[7]],wA:[p[8],p[9]],kA:[p[10],p[11]],aA:[p[12],p[13]],eB:[p[14],p[15]],wB:[p[16],p[17]],kB:[p[18],p[19]],aB:[p[20],p[21]]};}
+function exThumb(ex,t){
+  var p=P(poseAt(ex.tpl,t==null?.55:t)),cfg=T[ex.tpl].cfg,col=G[ex.g].accent;
+  function ln(a,b,w,c,o){return '<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="'+c+'" stroke-width="'+w+'" stroke-linecap="round" opacity="'+(o||1)+'"/>';}
+  var s='<svg viewBox="8 0 84 96" xmlns="http://www.w3.org/2000/svg">';
+  s+='<line x1="12" y1="92" x2="88" y2="92" stroke="#1E4152" stroke-width="1"/>';
+  s+=ln(p.hip,p.kB,4,'#1C3A47')+ln(p.kB,p.aB,3.4,'#1C3A47')+ln(p.neck,p.eB,3.4,'#1C3A47')+ln(p.eB,p.wB,3,'#1C3A47');
+  s+=ln(p.hip,p.neck,7,'#2A5566')+'<circle cx="'+p.head[0]+'" cy="'+p.head[1]+'" r="4.4" fill="#2A5566"/>';
+  s+=ln(p.hip,p.kA,4.6,col,.85)+ln(p.kA,p.aA,3.8,col,.7)+ln(p.neck,p.eA,3.8,col,.95)+ln(p.eA,p.wA,3.2,col,.85);
+  if(cfg.eq==='bar'||cfg.eq==='barback'||cfg.eq==='barhip'){
+    var c=cfg.eq==='barback'?p.neck:(cfg.eq==='barhip'?p.hip:p.wA);
+    s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="5" fill="none" stroke="#C4F53C" stroke-width="1.6"/>';
+  }else if(cfg.eq==='db'){s+='<rect x="'+(p.wA[0]-3)+'" y="'+(p.wA[1]-2)+'" width="6" height="4" rx="1.4" fill="#C4F53C"/>';}
+  else if(cfg.eq==='cable'&&cfg.anchor){s+='<line x1="'+p.wA[0]+'" y1="'+p.wA[1]+'" x2="'+cfg.anchor[0]+'" y2="'+cfg.anchor[1]+'" stroke="#37D9F0" stroke-width=".9" opacity=".8"/><circle cx="'+cfg.anchor[0]+'" cy="'+cfg.anchor[1]+'" r="2" fill="#37D9F0"/>';}
+  else if(cfg.eq==='barfixed'){s+='<line x1="34" y1="'+cfg.barY+'" x2="66" y2="'+cfg.barY+'" stroke="#C4F53C" stroke-width="1.8"/>';}
+  else if(cfg.eq==='machine'){s+='<rect x="'+(p.wA[0]-2)+'" y="'+(p.wA[1]-3)+'" width="4" height="6" rx="1.2" fill="#37D9F0" opacity=".8"/>';}
+  return s+'</svg>';
+}
+
+/* ---------- library ---------- */
+function X(id,n,g,tier,tpl,eq,act,sc,why,cues,mistake,refs){
+  return{id:id,n:n,g:g,tier:tier,tpl:tpl,eq:eq,act:act,sc:sc,why:why,cues:cues,mistake:mistake,refs:refs||[]};
+}
+var EQNAME={bar:'Штанга',db:'Гантели',cable:'Блок',machine:'Тренажёр',body:'Своё тело',ez:'EZ-гриф'};
+var EX=[
+ X('incline-db-press','Жим гантелей на наклонной 30°','chest','S','press_incline','db',{chest_up:.95,chest_mid:.55,delt_ant:.5,tri_lat:.35},[92,80,84,92],
+  'Наклон 30° смещает нагрузку на ключичную часть груди; гантели дают большую амплитуду и растяжение в нижней точке.',
+  ['Скамья 30°, лопатки сведены и опущены','Локти под 45–60° к корпусу, опускай до уровня груди'],'Наклон выше 45° превращает движение в жим дельт.'),
+ X('flat-bb-press','Жим штанги лёжа','chest','A','press_flat','bar',{chest_mid:.9,chest_up:.5,chest_low:.55,tri_lat:.5},[74,78,88,96],
+  'Лучшая прогрессия нагрузки и стабильность, но фиксированная траектория ограничивает растяжение грудных.',
+  ['Мост умеренный, лопатки в карман','Гриф касается нижнегрудинной линии'],'Отбив от груди убивает растяжение и время под нагрузкой.'),
+ X('low-cable-fly','Сведения снизу вверх в кроссовере','chest','S','fly_low','cable',{chest_up:.85,chest_mid:.6},[95,92,80,74],
+  'Блок нагружает грудь в растянутой позиции, где штанга и гантели почти не дают момента.',
+  ['Блоки внизу, шаг вперёд, корпус чуть наклонён','Веди руки по дуге вверх-к центру, локти мягкие'],'Превращать в жим: сгибание локтей снимает нагрузку с груди.',['zabaleta2021']),
+ X('pec-deck','Сведения в «бабочке»','chest','A','pecdeck','machine',{chest_mid:.9,chest_up:.5},[80,86,96,78],
+  'Максимальная стабильность и ровный профиль нагрузки — удобно доводить до отказа без страхующего.',
+  ['Сиденье так, чтобы рукояти были на уровне середины груди','Пауза 1 с в сведении, негатив 2–3 с'],'Слишком глубокое разведение с болью в плече — уменьши амплитуду.'),
+ X('weighted-dip','Отжимания на брусьях с весом, наклон','chest','A','dip','body',{chest_low:.9,chest_mid:.6,tri_lat:.6},[86,72,66,88],
+  'Сильное растяжение нижней части груди при наклоне корпуса вперёд; нагрузка легко растёт поясом.',
+  ['Наклон корпуса 20–30°, локти чуть в стороны','Опускайся до комфортного растяжения плеча'],'Вертикальный корпус переводит работу в трицепс.'),
+ X('pushup-deficit','Отжимания на упорах (дефицит)','chest','B','pushup','body',{chest_mid:.8,chest_up:.45,tri_lat:.4},[88,55,60,45],
+  'Растяжение лучше обычных отжиманий, но прогрессия нагрузки неудобна — жилет или блин.',
+  ['Упоры под ладони, корпус в линию','Грудь опускается ниже уровня ладоней'],'Провал в пояснице — теряется нагрузка на грудь.'),
+ X('cable-lateral','Отведение руки в кроссовере','delts','S','lateral_cable','cable',{delt_lat:.95,traps_up:.25},[90,96,86,80],
+  'Блок даёт момент уже в нижней (растянутой) точке, где гантель почти не нагружает средний пучок.',
+  ['Блок за спиной или сбоку внизу, трос за корпусом','Веди локтем до уровня плеча, без раскачки'],'Подъём плеч к ушам включает трапецию вместо дельт.',['zabaleta2021']),
+ X('db-lateral','Махи гантелями стоя','delts','A','lateral','db',{delt_lat:.9,traps_up:.3},[45,58,72,76],
+  'Классика, но профиль нагрузки пустой внизу: пик момента только в верхней точке.',
+  ['Наклон корпуса 10–15°, мизинец чуть выше','Работай до уровня плеча, негатив медленный'],'Читинг ногами и заброс гантелей инерцией.'),
+ X('rev-pecdeck','Обратная «бабочка»','delts','S','rev_pecdeck','machine',{delt_post:.95,traps_mid:.45},[86,88,96,82],
+  'Изолирует задний пучок в стабильной позиции — почти невозможно подключить спину.',
+  ['Грудь на спинке, рукояти на уровне плеч','Разводи локтями, лопатки не сводить намеренно'],'Сведение лопаток превращает движение в тягу.'),
+ X('face-pull','Тяга к лицу','delts','A','facepull','cable',{delt_post:.8,traps_mid:.6,traps_up:.35},[70,80,82,70],
+  'Задний пучок плюс внешние ротаторы: полезно для здоровья плеча при жимовом объёме.',
+  ['Блок на уровне лица, канатная рукоять','Тяни к переносице, локти выше кистей'],'Тянуть к животу — это уже тяга, не face pull.'),
+ X('cable-front-raise','Подъём перед собой в кроссовере','delts','B','front_raise','cable',{delt_ant:.9,chest_up:.25},[72,80,80,66],
+  'Передний пучок и так получает много работы во всех жимах — изоляция чаще избыточна.',
+  ['Блок внизу за спиной, рука прямая','Подъём до уровня глаз, без прогиба в пояснице'],'Добавлять это поверх 10+ жимовых подходов в неделю.',['volume2017']),
+ X('upright-row','Тяга к подбородку широким хватом','delts','B','upright','bar',{delt_lat:.7,traps_up:.6},[52,62,74,78],
+  'Работает, но у части людей вызывает импинджмент при узком хвате и высоком подъёме.',
+  ['Хват шире плеч, тяни до уровня груди','Локти не выше плеч'],'Узкий хват и гриф к подбородку — боль в плече.'),
+ X('lat-pulldown','Тяга верхнего блока','back','S','pulldown','cable',{lats:.9,traps_mid:.4,bi_long:.4},[88,84,92,90],
+  'Широчайшие получают растяжение вверху и легко прогрессируют вес; спина стабилизирована.',
+  ['Валики плотно, корпус отклонён на 10–20°','Тяни локтями к тазу, вверху полностью выпрямляй руки'],'Раскачка корпусом и тяга бицепсом.'),
+ X('chest-supported-row','Тяга с упором в грудь','back','S','row_sup','db',{traps_mid:.9,lats:.7,delt_post:.6,traps_up:.4},[80,84,96,86],
+  'Упор снимает нагрузку с поясницы и позволяет честно довести середину спины до отказа.',
+  ['Грудь на наклонной спинке, шея нейтральна','Локти в стороны под 45°, пауза в сокращении'],'Отрыв груди от опоры ради веса.'),
+ X('one-arm-cable-row','Тяга одной рукой в кроссовере','back','S','row_one','cable',{lats:.95,traps_mid:.4},[95,90,80,82],
+  'Односторонняя тяга с протракцией в растянутой точке — максимальная длина широчайшей.',
+  ['Шаг вперёд, в негативе позволь лопатке уйти вперёд','Тяни локоть к тазу, корпус не скручивай'],'Скручивание корпуса вместо работы лопатки.',['zabaleta2021']),
+ X('pullup-weighted','Подтягивания с весом','back','A','pullup','body',{lats:.9,bi_long:.55,traps_mid:.35},[86,70,64,90],
+  'Отличное растяжение и прогрессия поясом, но усталость высокая и техника плывёт к отказу.',
+  ['Полное выпрямление внизу, грудь к перекладине','1–2 повтора в запасе в последних подходах'],'Киппинг и половинчатая амплитуда.',['refalo2023']),
+ X('cable-pullover','Пуловер в кроссовере','back','A','pullover','cable',{lats:.85,chest_up:.2},[94,86,84,68],
+  'Изоляция широчайших без участия бицепса — хороший добивающий вектор.',
+  ['Блок вверху, наклон корпуса, руки почти прямые','Веди к бёдрам по дуге, чувствуй низ широчайших'],'Сгибать локти и превращать в тягу блока.'),
+ X('bb-shrug','Шраги со штангой','back','A','shrug','bar',{traps_up:.95},[62,74,88,92],
+  'Верх трапеции растёт от простого подъёма плеч с большим весом и полной амплитудой.',
+  ['Руки прямые, подъём плеч к ушам','Пауза 1 с вверху, негатив 2 с'],'Круговые движения плечами — лишняя нагрузка на сустав.'),
+ X('back-ext-45','Гиперэкстензия 45°','back','A','backext','body',{erectors:.8,gl_max:.6,ham_bf:.5},[80,66,80,72],
+  'Разгибатели и ягодицы в растяжении; легко дозировать своим весом или блином.',
+  ['Валики на уровне таза, спина нейтральна','Подъём до линии тела, без переразгибания'],'Гиперэкстензия поясницей вместо разгибания таза.'),
+ X('incline-db-curl','Сгибания на наклонной скамье','biceps','S','incline_curl','db',{bi_long:.92,brachialis:.5},[96,80,86,80],
+  'Плечо заведено назад — длинная головка бицепса стартует из максимального растяжения.',
+  ['Скамья 45–60°, локти строго за корпусом','Не выводи локти вперёд в подъёме'],'Подъём локтей снимает растяжение с длинной головки.',['zabaleta2021']),
+ X('preacher-curl','Сгибания на скамье Скотта','biceps','A','preacher','bar',{bi_short:.85,brachialis:.65},[70,84,94,80],
+  'Плечо впереди — акцент на короткую головку и брахиалис, максимальная стабильность.',
+  ['Подмышки на упоре, негатив до почти прямой руки','Не отрывай локти от скамьи'],'Резкий отказ внизу с полным расслаблением — риск для сухожилия.'),
+ X('cable-curl-behind','Сгибания в кроссовере за корпусом','biceps','S','incline_curl','cable',{bi_long:.9,bi_short:.5},[94,92,86,78],
+  'Блок сзади держит натяжение в растянутой позиции по всей амплитуде.',
+  ['Блок внизу сзади, шаг вперёд','Локоть фиксирован за линией корпуса'],'Шаг слишком близко — трос трётся о корпус.'),
+ X('hammer-curl','Молотковые сгибания','biceps','A','hammer','db',{brachialis:.9,brachioradialis:.8,bi_long:.5},[76,74,80,84],
+  'Нейтральный хват смещает работу на брахиалис и брахиорадиалис — толщина руки сбоку.',
+  ['Ладони друг к другу весь подход','Локти у корпуса, без раскачки'],'Разворот кисти в супинацию — это уже другой вектор.'),
+ X('ez-bar-curl','Сгибания с EZ-грифом','biceps','A','curl','ez',{bi_long:.7,bi_short:.75,brachialis:.5},[64,70,80,94],
+  'Простая прогрессия и комфорт для запястий; растяжение меньше, чем на наклонной.',
+  ['Локти у корпуса, корпус почти неподвижен','Негатив 2–3 с до почти прямых рук'],'Заброс грифа поясницей.'),
+ X('overhead-cable-ext','Разгибания из-за головы в кроссовере','triceps','S','overhead_ext','cable',{tri_long:.95,tri_med:.5},[96,90,84,82],
+  'Плечо согнуто — длинная головка растянута; в РКИ такой вариант дал заметно больший рост, чем разгибания вниз.',
+  ['Блок внизу сзади, шаг вперёд, локти у головы','Опускай рукоять глубоко за голову'],'Разводить локти в стороны и терять растяжение.',['maeo2022']),
+ X('overhead-db-single','Разгибание гантели из-за головы одной рукой','triceps','S','overhead_db','db',{tri_long:.92,tri_med:.45},[94,76,74,76],
+  'Тот же растянутый вектор без тренажёра; односторонне — удобно выравнивать асимметрию.',
+  ['Локоть рядом с ухом, свободная рука фиксирует плечо','Гантель уходит за голову до растяжения'],'Прогиб в пояснице вместо сгибания плеча.',['maeo2022']),
+ X('skullcrusher','Французский жим лёжа','triceps','A','skull','bar',{tri_long:.8,tri_lat:.6,tri_med:.6},[84,72,80,88],
+  'Растяжение длинной головки хорошее, но в верхней точке момент падает.',
+  ['Гриф за голову, а не ко лбу','Локти неподвижны, негатив 3 с'],'Разъезжающиеся локти и удар грифом в лоб.'),
+ X('pushdown','Разгибания на верхнем блоке','triceps','A','pushdown','cable',{tri_lat:.9,tri_med:.85,tri_long:.4},[42,80,92,86],
+  'Латеральная и медиальная головки нагружены хорошо, длинная — почти нет: дополняй работой из-за головы.',
+  ['Корпус чуть наклонён, локти прижаты','Полное разгибание с паузой 1 с'],'Давить весом корпуса вместо разгибания локтя.',['maeo2022']),
+ X('close-grip-bench','Жим узким хватом','triceps','A','closegrip','bar',{tri_lat:.75,tri_med:.7,tri_long:.5,chest_mid:.5},[66,76,88,94],
+  'Много веса и прогрессия, но трицепс работает в укороченной позиции и делит нагрузку с грудью.',
+  ['Хват на ширине плеч, локти вдоль корпуса','Гриф к нижней части груди'],'Слишком узкий хват — боль в запястьях.'),
+ X('hack-squat','Гакк-приседания','quads','S','hack','machine',{q_lat:.9,q_rect:.8,q_med:.85,gl_max:.4},[90,84,96,92],
+  'Глубокая амплитуда и жёсткая опора спины: квадрицепс можно довести до отказа безопасно.',
+  ['Стопы чуть впереди, пятки прижаты','Опускайся до полного сгибания колена без отрыва таза'],'Полуповторы ради веса.',['kubo2019','pedrosa2022']),
+ X('heel-squat','Приседания с блинами под пятками','quads','S','squat','bar',{q_rect:.88,q_lat:.85,q_med:.8,gl_max:.45},[92,78,70,90],
+  'Приподнятая пятка увеличивает сгибание колена и растяжение квадрицепса при вертикальном корпусе.',
+  ['Пятки на 2–3 см, корпус вертикально','Колени идут вперёд за носки — это нормально'],'Скругление поясницы в нижней точке.',['kubo2019']),
+ X('leg-extension','Разгибания ног в тренажёре','quads','S','legext','machine',{q_rect:.95,q_lat:.7,q_med:.75,q_int:.7},[88,86,96,80],
+  'Единственный способ нагрузить прямую мышцу бедра в растяжении; частичные в нижней части амплитуды работают не хуже полных.',
+  ['Спинка так, чтобы колено совпадало с осью','Работай в нижней трети амплитуды, если полное разгибание беспокоит колено'],'Отрыв таза и рывок весом.',['pedrosa2022']),
+ X('bulgarian-split','Болгарские выпады','quads','A','split','db',{q_lat:.8,q_med:.75,gl_max:.7,add_mag:.4},[88,72,58,80],
+  'Односторонняя работа с большим растяжением; ограничитель — стабилизация, а не сила мышцы.',
+  ['Передняя стопа в 50–60 см от скамьи','Корпус чуть наклонён, колено идёт вперёд'],'Слишком короткая стойка убивает амплитуду.'),
+ X('leg-press','Жим ногами','quads','A','legpress','machine',{q_lat:.85,q_rect:.75,q_med:.8,gl_max:.5},[82,80,94,92],
+  'Большой вес и стабильность; следи, чтобы таз не подкручивался в нижней точке.',
+  ['Стопы на ширине плеч, поясница прижата','Опускай платформу до угла колена 90–110°'],'Отрыв таза от спинки — нагрузка уходит на поясницу.'),
+ X('sissy-squat','Сисси-присед','quads','B','sissy','body',{q_rect:.9,q_lat:.6},[95,60,50,44],
+  'Экстремальное растяжение прямой мышцы, но высокая нагрузка на колено и плохая прогрессия.',
+  ['Держись за опору, колени вперёд, корпус назад','Амплитуда по комфорту колена'],'Делать через боль в надколеннике.'),
+ X('seated-leg-curl','Сгибания ног сидя','hams','S','legcurl_seat','machine',{ham_bf:.9,ham_st:.9,ham_sm:.85},[94,86,94,84],
+  'Согнутый таз растягивает бицепс бедра — в прямом сравнении рост был заметно больше, чем в варианте лёжа.',
+  ['Спинка максимально вперёд, валик на ахилле','Негатив 3 с, без рывка в растянутой точке'],'Отрыв таза от сиденья ради веса.',['maeo2021']),
+ X('rdl','Румынская тяга','hams','S','rdl','bar',{ham_bf:.88,ham_st:.8,gl_max:.8,erectors:.6},[92,78,72,94],
+  'Максимальная нагрузка на бицепс бедра в растяжении плюс ягодицы; отличная прогрессия.',
+  ['Таз назад, колени мягкие, гриф скользит по бедру','Опускайся до чувства растяжения, не до пола'],'Приседать вместо наклона и круглить спину.'),
+ X('lying-leg-curl','Сгибания ног лёжа','hams','A','legcurl_lying','machine',{ham_bf:.8,ham_st:.7,ham_sm:.7},[64,80,92,80],
+  'Рабочий вариант, но таз разогнут и мышца короче — стимул меньше, чем сидя.',
+  ['Таз прижат, носок на себя','Полное разгибание в негативе'],'Прогиб в пояснице в сокращении.',['maeo2021']),
+ X('nordic-curl','Нордические сгибания','hams','A','nordic','body',{ham_bf:.85,ham_st:.8,ham_sm:.75},[90,64,60,58],
+  'Мощный эксцентрический стимул в растяжении; прогрессия — угол наклона и помощь рук.',
+  ['Пятки зафиксированы, корпус в линию','Опускайся максимально медленно, отжимайся руками'],'Сгибаться в тазу, чтобы дотянуть.'),
+ X('ham-backext','Гиперэкстензия с акцентом на бицепс бедра','hams','B','backext','body',{ham_bf:.7,ham_st:.6,gl_max:.6},[78,60,76,60],
+  'Полезный дополнительный вектор, если нет тренажёра для сгибаний.',
+  ['Носки развернуты, спина чуть скруглена','Толкай таз в валик, поднимайся за счёт ягодиц'],'Работать поясницей.'),
+ X('hip-thrust','Ягодичный мост со штангой','glutes','S','hipthrust','bar',{gl_max:.95,ham_bf:.4,q_lat:.25},[48,88,90,94],
+  'Пик нагрузки в укороченной позиции — хорошо дополняет присед и RDL, где пик внизу.',
+  ['Лопатки на скамье, подбородок слегка к груди','Пауза 1–2 с вверху, рёбра вниз'],'Переразгибание поясницы вместо таза.',['contreras2015']),
+ X('deep-squat','Глубокие приседания','glutes','S','squat','bar',{gl_max:.9,add_mag:.7,q_lat:.75,q_med:.7},[94,76,68,92],
+  'Глубина ниже параллели даёт больший рост ягодичных и приводящих, чем частичный присед.',
+  ['Таз ниже колена, корпус под контролем','Пятки прижаты, колени по линии стоп'],'Останавливаться чуть выше параллели ради веса.',['kubo2019']),
+ X('cable-kickback','Отведение ноги в кроссовере','glutes','A','kickback','cable',{gl_max:.85,ham_bf:.3},[70,84,84,70],
+  'Изоляция большой ягодичной с постоянным натяжением; удобно добирать объём без осевой нагрузки.',
+  ['Манжета на щиколотке, корпус наклонён','Толкай пятку назад-вверх, поясница неподвижна'],'Прогибаться в пояснице вместо разгибания таза.'),
+ X('hip-abduction','Отведение бедра в тренажёре','glutes','A','abduct','machine',{gl_med:.95,gl_min:.7},[62,84,94,80],
+  'Средняя ягодичная почти не грузится в приседах — её нужно тренировать отдельно.',
+  ['Корпус чуть наклонён вперёд','Разводи колени против валиков, пауза 1 с'],'Помогать себе раскачкой корпуса.'),
+ X('bulgarian-glute','Болгарские выпады с наклоном','glutes','A','split','db',{gl_max:.85,add_mag:.55,q_lat:.55},[92,74,58,80],
+  'Наклон корпуса и длинный шаг смещают момент с колена на таз.',
+  ['Шаг длиннее, корпус наклонён 30–40°','Толкайся пяткой передней ноги'],'Вертикальный корпус — снова квадрицепс.'),
+ X('standing-calf','Подъёмы на носки стоя','calves','S','calf_stand','body',{gas_med:.95,gas_lat:.9},[94,72,80,86],
+  'Прямое колено растягивает икроножную; выгоднее всего работать в нижней (растянутой) части амплитуды.',
+  ['Носки на платформе, пятки максимально вниз','Пауза 2 с в растяжении, без пружины'],'Пружинить в верхней точке — ахилл забирает работу.',['kassiano2023']),
+ X('seated-calf','Подъёмы на носки сидя','calves','S','calf_seat','machine',{soleus:.95,gas_med:.3},[90,82,94,84],
+  'Согнутое колено выключает икроножную и изолирует камбаловидную — её иначе не достать.',
+  ['Валики на нижней трети бедра','Полная амплитуда, пауза внизу'],'Работать короткими быстрыми повторами без растяжения.'),
+ X('legpress-calf','Жим носками в тренажёре','calves','A','legpress','machine',{gas_med:.85,gas_lat:.8},[86,80,92,88],
+  'Удобно грузить большим весом при прямом колене и полной амплитуде.',
+  ['Колени почти прямые, но не заблокированы','Платформа уходит до растяжения икры'],'Сгибать колени — включается камбаловидная.'),
+ X('tibialis-raise','Подъём носков на себя','calves','B','tibialis','body',{tibialis:.9},[70,66,80,58],
+  'Передняя большеберцовая: полезно для баланса голени и здоровья колена, гипертрофия скромная.',
+  ['Пятки на полу, носки максимально вверх','Медленный негатив 3 с'],'Делать вместо тренировки икр.'),
+ X('cable-crunch','Скручивания на верхнем блоке','abs','S','crunch_cable','cable',{abs_rect:.95,abs_obl:.4},[86,88,90,92],
+  'Пресс — такая же мышца: нужна прогрессия веса, а не 100 повторов без нагрузки.',
+  ['Таз фиксирован, скручивай грудную клетку к тазу','Выдох в сокращении, негатив 3 с'],'Тянуть руками и сгибаться в тазу вместо скручивания.',['load2021']),
+ X('hanging-leg-raise','Подъём ног в висе с подкруткой таза','abs','A','legraise','body',{abs_rect:.85,abs_obl:.5},[84,66,62,72],
+  'Нижний отдел прямой мышцы работает лучше, когда таз подкручивается, а не просто сгибается бедро.',
+  ['В висе подкрути таз в конце подъёма','Ноги до уровня таза и выше, без раскачки'],'Просто махи ногами — работает подвздошно-поясничная.'),
+ X('ab-wheel','Ролик для пресса','abs','A','wheel','body',{abs_rect:.9,abs_obl:.7,abs_trans:.6},[92,62,56,64],
+  'Антиэкстензионная работа в огромном растяжении; прогрессия — дистанция выката.',
+  ['Рёбра вниз, таз подкручен','Выкатывайся ровно настолько, чтобы держать поясницу'],'Провал в пояснице в крайней точке.'),
+ X('woodchop','«Дровосек» в кроссовере','abs','A','woodchop','cable',{abs_obl:.9,abs_trans:.6,abs_rect:.4},[72,82,76,70],
+  'Косые под ротацией и антиротацией — то, чего нет в обычных скручиваниях.',
+  ['Блок вверху, тяни по диагонали к противоположному бедру','Таз стабилен, вращение в грудном отделе'],'Крутить поясницей с фиксированным тазом.'),
+ X('wrist-curl','Сгибания запястий','fore','A','wrist','bar',{wr_flex:.95},[80,74,90,84],
+  'Сгибатели предплечья растут от полной амплитуды и малого веса с контролем.',
+  ['Предплечья на бёдрах, кисти свисают','Полное разгибание внизу, пауза вверху'],'Работать локтями и корпусом.'),
+ X('reverse-wrist','Разгибания запястий','fore','A','wrist','bar',{wr_ext:.95},[78,74,90,80],
+  'Разгибатели обычно отстают — они же защищают локоть при тягах.',
+  ['Вес в 2–3 раза меньше, чем в сгибаниях','Медленный негатив, без рывка'],'Брать рабочий вес сгибаний.'),
+ X('reverse-curl','Обратные сгибания на бицепс','fore','A','curl','ez',{brachioradialis:.9,wr_ext:.6,bi_long:.35},[74,72,80,82],
+  'Брахиорадиалис — заметная часть объёма предплечья, лучше грузится пронированным хватом.',
+  ['Хват сверху, локти у корпуса','Кисть нейтральна, не сгибай запястье'],'Заваливать кисть назад под весом.'),
+ X('adduction-machine','Сведение ног в тренажёре','add','S','adduct','machine',{add_mag:.95,add_long:.7,add_brev:.6},[86,86,96,84],
+  'Большая приводящая — крупная мышца, которая в приседе работает не на полную; изоляция даёт ей отдельный стимул.',
+  ['Спина прижата, разводи до комфортного растяжения','Своди с паузой 1 с, негатив 3 с'],'Резко бросать валики в растянутой точке.',['kubo2019']),
+ X('copenhagen','Копенгагенская планка','add','A','copenhagen','body',{add_mag:.9,add_long:.75,abs_obl:.5},[90,60,54,60],
+  'Мощный стимул приводящих в растяжении плюс профилактика паховых травм.',
+  ['Верхняя нога на скамье, нижняя подтянута','Начни с колена на опоре, прогрессируй до стопы'],'Сразу полная версия с прямой ногой.'),
+ X('cable-adduction','Приведение ноги в кроссовере','add','A','kickback','cable',{add_mag:.88,add_long:.6},[82,86,80,72],
+  'Тот же вектор, что в тренажёре, но стоя и по одной ноге — удобно, если тренажёр занят.',
+  ['Манжета на щиколотке, стой боком к блоку','Веди ногу перед опорной, корпус неподвижен'],'Наклоняться корпусом, помогая инерцией.')
+];
+EX.forEach(function(e){
+  e.score=Math.round(e.sc[0]*.34+e.sc[1]*.28+e.sc[2]*.2+e.sc[3]*.18);
+  e.heads=Object.keys(e.act).sort(function(a,b){return e.act[b]-e.act[a];});
+});
+var EXBY={};EX.forEach(function(e){EXBY[e.id]=e;});
+
+/* ---------- nutrition ---------- */
+var ACTS=[{v:1.30,n:'Сидячая работа, <5 000 шагов'},{v:1.42,n:'Офис + 7–10 000 шагов'},{v:1.55,n:'На ногах, 10–14 000 шагов'},{v:1.70,n:'Физический труд, >15 000 шагов'}];
+var EXPN={new:'Новичок (<1 года)',mid:'Средний (1–3 года)',adv:'Продвинутый (3+ года)'};
+var GOALS={
+  cut:{n:'Сушка',accent:'#FF3B47',lead:'Минимальный дефицит, который ещё даёт результат — и сохраняет мышцы.'},
+  gain:{n:'Набор',accent:'#C4F53C',lead:'Профицит ровно такой, чтобы росла мышца, а не только жир.'},
+  rec:{n:'Рекомпозиция',accent:'#37D9F0',lead:'Около поддержки: жир вниз, мышцы вверх — медленно, но одновременно.'}
+};
+var defProfile={sex:'m',age:27,height:178,weight:82,bfKnown:true,bf:18,act:1.42,days:4,exp:'mid',goal:'cut',tempo:50};
+var profile=Object.assign({},defProfile,store.get('profile',{}));
+if(!GOALS[profile.goal])profile.goal='cut';
+
+function compute(p){
+  var w=p.weight,h=p.height,a=p.age;
+  var lbm=p.bfKnown?w*(1-p.bf/100):null;
+  var rmr=p.bfKnown?(370+21.6*lbm):(10*w+6.25*h-5*a+(p.sex==='m'?5:-161));
+  var rmrMethod=p.bfKnown?'Katch–McArdle (по сухой массе)':'Mifflin–St Jeor';
+  var trainPerSession=4.5*3.5*w/200*50;
+  var trainDay=trainPerSession*p.days/7;
+  var tdee=rmr*p.act+trainDay;
+  var res={rmr:rmr,rmrMethod:rmrMethod,tdee:tdee,trainDay:trainDay,trainPerSession:trainPerSession,neat:rmr*(p.act-1),lbm:lbm,warnings:[],capped:false,capVal:0};
+  var bfEst=p.bfKnown?p.bf:(p.sex==='m'?clamp((w/Math.pow(h/100,2)-11)*.9,8,38):clamp((w/Math.pow(h/100,2)-9)*.9,16,45));
+  var leanish=(p.sex==='m'?bfEst<12:bfEst<20),highfat=(p.sex==='m'?bfEst>25:bfEst>35);
+  var t=p.tempo/100;
+  if(p.goal==='cut'){
+    var maxRate=leanish?0.5:(highfat?1.0:0.75);
+    var want=0.35+t*0.85,rate=Math.min(want,maxRate);
+    res.capped=want>maxRate+0.001;res.capVal=maxRate;res.rate=rate;
+    var deficit=rate/100*w*7700/7,kcal=tdee-deficit,floor=Math.max(rmr*1.08,w*20);
+    if(kcal<floor){kcal=floor;res.warnings.push({t:'warn',m:'Расчётный дефицит опускал калории ниже безопасного пола ('+Math.round(floor)+' ккал). Приложение подняло их до пола — снизь темп или добавь активность.'});}
+    res.kcal=kcal;res.delta=kcal-tdee;
+    res.protein=lbm?2.5*lbm:2.0*w;
+    res.proteinNote=lbm?'2,5 г/кг сухой массы — середина диапазона 2,3–3,1 г/кг СМТ для дефицита.':'2,0 г/кг массы тела — оценка без данных о составе тела.';
+    res.proteinRef='helms2014';
+    res.fat=Math.max(0.65*w,kcal*0.20/9);
+    res.fatNote='Не ниже 0,65 г/кг и 20% калорийности — минимум для гормонального фона.';
+    res.expectWeek=-rate/100*w;
+    res.fatShare=clamp(0.95-(rate-0.5)*0.35,0.72,0.95);
+    res.leanWeek=res.expectWeek*(1-res.fatShare);res.fatWeek=res.expectWeek*res.fatShare;
+  }else if(p.goal==='gain'){
+    var maxPct=p.exp==='adv'?12:(p.exp==='mid'?15:20);
+    var wantPct=6+t*16,pct=Math.min(wantPct,maxPct);
+    res.capped=wantPct>maxPct+0.001;res.capVal=maxPct;
+    var surplus=tdee*pct/100;
+    if(surplus>500){surplus=500;res.warnings.push({t:'warn',m:'Профицит ограничен +500 ккал: сверх этого прирост идёт преимущественно жиром.'});}
+    res.kcal=tdee+surplus;res.delta=surplus;res.pct=pct;
+    res.protein=1.8*w;
+    res.proteinNote='1,6 г/кг — плато анаболического ответа по мета-анализу; берём 1,8 г/кг как запас. Выше 2,2 г/кг доказанной пользы нет.';
+    res.proteinRef='morton2018';
+    res.fat=Math.max(0.9*w,res.kcal*0.22/9);
+    res.fatNote='0,9 г/кг или ~22–25% калорийности; остальное — углеводы под тренировки.';
+    var rateGain=p.exp==='new'?0.4:(p.exp==='mid'?0.3:0.22);
+    res.expectWeek=rateGain/100*w;
+    res.leanShare=p.exp==='new'?0.6:(p.exp==='mid'?0.42:0.28);
+    res.leanWeek=res.expectWeek*res.leanShare;res.fatWeek=res.expectWeek*(1-res.leanShare);res.rate=rateGain;
+  }else{
+    var maxDef=12,wantDef=2+t*14,def=Math.min(wantDef,maxDef);
+    res.capped=wantDef>maxDef+0.001;res.capVal=maxDef;
+    var d=Math.min(tdee*def/100,350);
+    res.kcal=tdee-d;res.delta=-d;res.pct=def;
+    res.protein=lbm?Math.max(2.2*w,2.6*lbm):2.2*w;
+    res.proteinNote='2,2 г/кг (или 2,6 г/кг сухой массы) — верхний практичный уровень: на околонулевом балансе белок делает всю работу.';
+    res.proteinRef='barakat2020';
+    res.fat=Math.max(0.8*w,res.kcal*0.22/9);
+    res.fatNote='0,8 г/кг — комфортный минимум на околоподдержке.';
+    res.expectWeek=-d*7/7700;
+    res.leanWeek=0.0009*w*(p.exp==='new'?1.6:(p.exp==='mid'?1:0.55));
+    res.fatWeek=res.expectWeek-res.leanWeek;res.rate=res.expectWeek/w*100;
+  }
+  res.carbs=Math.max(0,(res.kcal-res.protein*4-res.fat*9)/4);
+  res.pkcal=res.protein*4;res.fkcal=res.fat*9;res.ckcal=res.carbs*4;
+  res.pPerKg=res.protein/w;res.fPerKg=res.fat/w;res.cPerKg=res.carbs/w;
+  res.fiber=14*res.kcal/1000;res.water=w*35+(p.days>0?400:0);
+  res.mealP=Math.max(Math.round(res.protein/4),Math.round(0.4*w));
+  if(res.carbs/w<1.5&&p.goal!=='cut')res.warnings.push({t:'warn',m:'Углеводов меньше 1,5 г/кг — тренировочная производительность может просесть. Уменьши жиры или добавь активность вместо урезания.'});
+  if(res.protein/w>3.2)res.warnings.push({t:'info',m:'Белок вышел очень высоким из-за низкой калорийности. Это допустимо, но часть можно перевести в углеводы — прироста мышц это не отнимет.'});
+  res.weeks=[];
+  var cw=w,cl=lbm||w*(1-bfEst/100),cf=w-cl;
+  for(var i=0;i<=12;i++){res.weeks.push({w:cw,l:cl,f:cf});cw+=res.expectWeek;cl+=res.leanWeek;cf+=res.fatWeek;}
+  res.adjust=Math.round(Math.abs(res.expectWeek)*0.35*7700/7/10)*10;
+  if(res.adjust<80)res.adjust=80;
+  return res;
+}
+
+/* ---------- state ---------- */
+var S={
+  stack:[{id:'home',p:{}}],
+  favs:store.get('favs',[]),
+  plans:store.get('plans',[]),
+  filter:{q:'',group:'all',head:null,eq:'all',tier:'all',favOnly:false,sort:'score'},
+  anatSide:null,lab:null
+};
+if(!Array.isArray(S.favs))S.favs=[];
+if(!Array.isArray(S.plans))S.plans=[];
+var app=$('#app');
+function nav(to,p){S.stack.push({id:to,p:p||{}});render();haptic('light');}
+nav.back=function(){if(S.stack.length>1){S.stack.pop();render();haptic('light');}};
+function cur(){return S.stack[S.stack.length-1];}
+function scrollTop(){try{window.scrollTo(0,0);}catch(e){}}
+
+/* ---------- icons ---------- */
+function ico(n){
+  var s='<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">';
+  if(n==='ex')s+='<path d="M4 9v8M7 7v12M19 7v12M22 9v8M7 13h12"/><circle cx="13" cy="13" r="1.6"/>';
+  if(n==='cut')s+='<path d="M13 3l7 5v6c0 5-3 8-7 9-4-1-7-4-7-9V8z"/><path d="M9 13l3 3 5-6"/>';
+  if(n==='gain')s+='<path d="M4 20h18"/><path d="M7 20V11M13 20V5M19 20v-7"/>';
+  if(n==='rec')s+='<path d="M5 13a8 8 0 0114-5"/><path d="M21 13a8 8 0 01-14 5"/><path d="M19 4v4h-4M7 22v-4h4"/>';
+  if(n==='search')s+='<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/>';
+  return s+'</svg>';
+}
+function iconPlay(){return '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 3l9 5-9 5z"/></svg>';}
+function iconPause(){return '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="3" width="3" height="10" rx="1"/><rect x="9" y="3" width="3" height="10" rx="1"/></svg>';}
+
+/* ---------- screens ---------- */
+function tile(i,t,d,accent,to,idx){
+  return '<button class="tile enter" style="--accent:'+accent+';animation-delay:'+(0.18+idx*0.08)+'s" data-act="go" data-to="'+to+'">'+
+    '<span class="tile-ico" style="color:'+accent+'">'+ico(i)+'</span>'+
+    '<span class="grow"><span class="tile-n">0'+(idx+1)+'</span><span class="tile-t">'+t+'</span><span class="tile-d">'+d+'</span></span>'+
+    '<span class="tile-arrow"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9h10M10 5l4 4-4 4"/></svg></span></button>';
+}
+function scrHome(){
+  var tick='<b>SBL</b> · '+EX.length+' упражнений · '+GROUPS.length+' групп · '+Object.keys(REFS).length+' источников · нагрузка в растянутой позиции · 1–3 повтора в запасе · 2× в неделю на мышцу · белок 1,6–2,2 г/кг · темп 0,25–0,75% массы в неделю';
+  return '<div class="home">'+
+    '<div class="kicker enter">Evidence-based training console</div>'+
+    '<div class="wordmark enter" style="animation-delay:.04s">SBL</div>'+
+    '<div class="home-sub enter" style="animation-delay:.1s">Science · Based · Lifting</div>'+
+    '<p class="home-line enter" style="animation-delay:.14s">Качалка без мифов: <b>самые эффективные упражнения по пучкам мышц</b> и <b>КБЖУ ровно столько, сколько достаточно</b> — со ссылками на исследования.</p>'+
+    '<div class="tiles">'+
+      tile('ex','Упражнение','Группы мышц → пучки → анимации','#FF3B47','muscles',0)+
+      tile('cut','Для сушки','Дефицит без потери мышц','#FFB23C','calc-cut',1)+
+      tile('gain','Набор','Профицит без лишнего жира','#C4F53C','calc-gain',2)+
+    '</div>'+
+    '<div class="home-foot enter" style="animation-delay:.42s">'+
+      '<button class="linkbtn" data-act="go" data-to="calc-rec">или рекомпозиция →</button>'+
+      '<button class="linkbtn" data-act="go" data-to="favs">★ Избранное</button>'+
+      '<button class="linkbtn" data-act="refs">Источники</button>'+
+    '</div>'+
+    '<div class="ticker enter" style="animation-delay:.5s"><div class="ticker-in"><span>'+tick+'</span><span>'+tick+'</span></div></div></div>';
+}
+function scrMuscles(){
+  var f=S.filter;
+  var cards=GROUPS.map(function(g,i){
+    var hot=g.heads.map(function(h){return h.id;});
+    var n=EX.filter(function(e){return e.g===g.id;}).length;
+    return '<button class="mcard enter" style="animation-delay:'+(i*0.035)+'s" data-act="group" data-g="'+g.id+'">'+
+      '<span class="mcard-badge">'+n+'</span>'+
+      '<span class="fig">'+anatSVG({side:g.side,hot:hot,box:g.box})+'</span>'+
+      '<span class="mcard-b"><span class="mcard-t">'+g.n+'</span><span class="mcard-s">'+g.lat+'</span></span></button>';
+  }).join('');
+  return '<div class="kicker enter">Раздел 01 · Библиотека</div>'+
+    '<h2 class="enter" style="animation-delay:.03s;margin-bottom:12px">Упражнение</h2>'+
+    '<div class="searchbar enter" style="animation-delay:.06s"><span style="color:var(--slate-dim)">'+ico('search')+'</span>'+
+      '<input id="q" type="search" placeholder="Поиск: пучок, упражнение, тренажёр…" value="'+esc(f.q)+'" data-bind="q" autocomplete="off">'+
+      (f.q?'<button class="iconbtn" data-act="clearq" aria-label="Очистить">✕</button>':'')+'</div>'+
+    '<div id="searchOut"></div>'+
+    '<div class="between" style="margin:14px 0 9px"><h3>Группы мышц</h3><span class="mono" style="font-size:11px;color:var(--slate-dim)">'+GROUPS.length+' / '+EX.length+' упр.</span></div>'+
+    '<div class="mgrid">'+cards+'</div>'+
+    '<div class="panel pad enter" style="margin-top:14px;animation-delay:.3s">'+
+      '<div class="row" style="align-items:flex-start;gap:10px"><span style="color:var(--cyan);flex:0 0 auto">'+ico('rec')+'</span>'+
+      '<div style="font-size:13px;color:var(--slate);line-height:1.55">Мышца растёт <b style="color:var(--bone)">неравномерно</b>: разные упражнения нагружают разные её участки. Поэтому в SBL выбор идёт не «на мышцу», а <b style="color:var(--bone)">на пучок</b> — с учётом длины мышцы и профиля нагрузки.</div></div>'+
+      '<div class="badge-row"><span class="pill cy">Wakahara 2013</span><span class="pill cy">Zabaleta-Korta 2021</span><span class="pill cy">Fonseca 2014</span></div></div>';
+}
+function filtered(){
+  var f=S.filter,q=f.q.trim().toLowerCase();
+  var out=EX.filter(function(e){
+    if(f.group!=='all'&&e.g!==f.group)return false;
+    if(f.head&&e.heads.indexOf(f.head)<0)return false;
+    if(f.eq!=='all'&&e.eq!==f.eq)return false;
+    if(f.tier!=='all'&&e.tier!==f.tier)return false;
+    if(f.favOnly&&S.favs.indexOf(e.id)<0)return false;
+    if(q){
+      var hay=(e.n+' '+G[e.g].n+' '+e.heads.map(function(h){return HEADNAME[h];}).join(' ')+' '+EQNAME[e.eq]+' '+e.why).toLowerCase();
+      if(hay.indexOf(q)<0)return false;
+    }
+    return true;
+  });
+  var s=f.sort;
+  out.sort(function(a,b){
+    if(s==='score')return b.score-a.score;
+    if(s==='stretch')return b.sc[0]-a.sc[0];
+    if(s==='stab')return b.sc[2]-a.sc[2];
+    if(s==='prog')return b.sc[3]-a.sc[3];
+    return a.n.localeCompare(b.n,'ru');
+  });
+  return out;
+}
+function exCard(e,i,showGroup){
+  var fav=S.favs.indexOf(e.id)>=0;
+  var tags=e.heads.slice(0,2).map(function(h){return '<span class="tag hi">'+HEADNAME[h]+'</span>';}).join('');
+  return '<div class="excard enter" style="animation-delay:'+Math.min(i*0.03,.3)+'s">'+
+    '<button class="exthumb" data-act="ex" data-id="'+e.id+'" aria-label="'+esc(e.n)+'">'+exThumb(e)+'</button>'+
+    '<button class="grow" data-act="ex" data-id="'+e.id+'" style="text-align:left">'+
+      '<span class="exname" style="display:block">'+e.n+'</span>'+
+      '<span class="extags">'+(showGroup?'<span class="tag">'+G[e.g].n+'</span>':'')+tags+'<span class="tag">'+EQNAME[e.eq]+'</span></span>'+
+      '<span class="scorebar" style="display:block"><i style="width:'+e.score+'%"></i></span></button>'+
+    '<span class="tier '+e.tier+'">'+e.tier+'</span>'+
+    '<button class="fav '+(fav?'on':'')+'" data-act="fav" data-id="'+e.id+'" aria-label="В избранное">'+
+      '<svg width="15" height="15" viewBox="0 0 20 20" fill="'+(fav?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 8.3l5-.7z"/></svg></button></div>';
+}
+function renderSearchOut(){
+  var box=$('#searchOut');if(!box)return;
+  var f=S.filter;
+  var active=f.q.trim()||f.group!=='all'||f.eq!=='all'||f.tier!=='all'||f.favOnly||f.head;
+  if(!active){box.innerHTML='';return;}
+  var list=filtered();
+  var eqOpts=['all','bar','db','cable','machine','body'].map(function(v){
+    return '<button class="chip '+(f.eq===v?'on lime':'')+'" data-act="feq" data-v="'+v+'">'+(v==='all'?'Всё железо':EQNAME[v])+'</button>';}).join('');
+  var tierOpts=['all','S','A','B'].map(function(v){
+    return '<button class="chip '+(f.tier===v?'on':'')+'" data-act="ftier" data-v="'+v+'">'+(v==='all'?'Все тиры':'Тир '+v)+'</button>';}).join('');
+  box.innerHTML='<div class="chips">'+eqOpts+'</div><div class="chips">'+tierOpts+
+    '<button class="chip '+(f.favOnly?'on':'')+'" data-act="ffav">★ Избранное ('+S.favs.length+')</button>'+
+    '<select data-bind="sort" style="max-width:190px;flex:0 0 auto">'+
+      ['score|По эффективности','stretch|По растяжению','stab|По стабильности','prog|По прогрессии','name|По алфавиту'].map(function(o){
+        var p=o.split('|');return '<option value="'+p[0]+'"'+(f.sort===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select></div>'+
+    '<div class="between" style="margin:6px 0 8px"><span class="mono" style="font-size:11px;color:var(--slate)">Найдено: <b style="color:var(--lime)">'+list.length+'</b></span>'+
+    '<button class="linkbtn" data-act="resetf">Сбросить фильтры</button></div>'+
+    (list.length?'<div class="exlist">'+list.map(function(e,i){return exCard(e,i,true);}).join('')+'</div>'
+      :'<div class="empty">Ничего не нашлось. Попробуй «длинная головка», «растяжение», «блок».</div>');
+}
+function scrGroup(p){
+  var g=G[p.g];if(!g)return '<div class="empty">Группа не найдена</div>';
+  var side=S.anatSide||g.side,sel=S.filter.head;
+  var list=EX.filter(function(e){return e.g===g.id&&(!sel||e.heads.indexOf(sel)>=0);}).sort(function(a,b){return b.score-a.score;});
+  var hot=g.heads.map(function(h){return h.id;});
+  var heads=g.heads.map(function(h){
+    var best=EX.filter(function(e){return e.heads.indexOf(h.id)>=0;}).sort(function(a,b){return (b.act[h.id]||0)-(a.act[h.id]||0);})[0];
+    return '<button class="headbtn '+(sel===h.id?'on':'')+'" data-act="head" data-h="'+h.id+'">'+
+      '<span class="dot" style="background:'+h.c+'"></span>'+
+      '<span class="nm">'+h.n+(h.deep?' <span class="deep">глубокий слой</span>':'')+'</span>'+
+      '<span class="pc">'+(best?'★ '+best.tier:'')+'</span></button>';
+  }).join('');
+  return '<div class="kicker enter">'+g.lat+'</div>'+
+    '<div class="between enter" style="animation-delay:.03s;margin-bottom:12px"><h2>'+g.n+'</h2><span class="pill cr">'+EX.filter(function(e){return e.g===g.id;}).length+' упражнений</span></div>'+
+    '<div class="anat-wrap enter" style="animation-delay:.06s">'+
+      '<div class="anat-side"><button class="chip '+(side==='front'?'on':'')+'" data-act="side" data-v="front">Спереди</button>'+
+      '<button class="chip '+(side==='back'?'on':'')+'" data-act="side" data-v="back">Сзади</button></div>'+
+      '<div class="anat-hint">тап по мышце = пучок</div>'+
+      anatSVG({side:side,hot:hot,sel:sel,box:'20 10 180 380',lines:true,interactive:true})+
+      '<div class="anat-legend">'+g.heads.map(function(h){return '<span class="lg '+(sel===h.id?'hot':'')+'">'+h.n+'</span>';}).join('')+'</div></div>'+
+    '<div class="between" style="margin:16px 0 8px"><h3>Пучки</h3>'+(sel?'<button class="linkbtn" data-act="head" data-h="">Показать все</button>':'')+'</div>'+
+    '<div class="heads enter" style="animation-delay:.1s">'+heads+'</div>'+
+    '<div class="between" style="margin:16px 0 8px"><h3>Вариации'+(sel?' · '+HEADNAME[sel]:'')+'</h3><span class="mono" style="font-size:11px;color:var(--slate-dim)">по SBL-рейтингу</span></div>'+
+    (list.length?'<div class="exlist">'+list.map(function(e,i){return exCard(e,i,false);}).join('')+'</div>':'<div class="empty">Для этого пучка нет отдельного упражнения — он работает как синергист в соседних.</div>')+
+    '<div class="panel pad" style="margin-top:14px"><h3 style="color:var(--cyan);margin-bottom:8px">Как читать рейтинг</h3><div class="bars">'+
+      [['Растяжение','Нагрузка в удлинённой позиции','#FF3B47'],['Профиль','Совпадение момента и силы мышцы','#FFB23C'],['Стабильность','Меньше техники — ближе к отказу','#37D9F0'],['Прогрессия','Насколько легко добавлять вес','#C4F53C']].map(function(r){
+        return '<div><div class="bar-l"><span>'+r[0]+'</span><span style="color:var(--slate-dim)">'+r[1]+'</span></div><div class="bar-t"><i style="width:100%;background:'+r[2]+';opacity:.5"></i></div></div>';}).join('')+'</div>'+
+      '<div style="font-size:12.5px;color:var(--slate);margin-top:10px">Итоговый балл = 0,34·растяжение + 0,28·профиль + 0,20·стабильность + 0,18·прогрессия. Тир <b style="color:var(--lime)">S</b> — лучший стимул на единицу усталости.</div></div>';
+}
+function range(key,label,val,min,max,step,unit,cls){
+  return '<div class="ctrl"><div class="ctrl-l"><span>'+label+'</span><b id="v_'+key+'">'+trim(val,2)+' '+unit+'</b></div>'+
+    '<input type="range" class="'+cls+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" data-bind="'+key+'" aria-label="'+label+'"></div>';
+}
+function tgb(key,label,on){return '<button class="tg '+(on?'on':'')+'" data-act="tg" data-k="'+key+'"><i></i>'+label+'</button>';}
+function tempoStr(L){return 'темп '+trim(L.ecc,1)+'–'+trim(L.pause,1)+'–'+trim(L.conc,1)+'–0';}
+function scrEx(p){
+  var e=EXBY[p.id];if(!e)return '<div class="empty">Упражнение не найдено</div>';
+  var g=G[e.g],fav=S.favs.indexOf(e.id)>=0,L=S.lab;
+  var actBars=Object.keys(e.act).sort(function(a,b){return e.act[b]-e.act[a];}).map(function(h){
+    var v=Math.round(e.act[h]*100),c=HEADCOLOR[h]||g.accent;
+    return '<div class="bar-row"><div><div class="bar-l"><span>'+(HEADNAME[h]||h)+'</span></div><div class="bar-t"><i style="width:'+v+'%;background:linear-gradient(90deg,'+c+',rgba(255,255,255,.35))"></i></div></div><div class="bar-v">'+v+'%</div></div>';}).join('');
+  var sn=['Растяжение','Профиль нагрузки','Стабильность','Прогрессия'],sc=['#FF3B47','#FFB23C','#37D9F0','#C4F53C'];
+  var scoreBars=e.sc.map(function(v,i){
+    return '<div class="bar-row"><div><div class="bar-l"><span>'+sn[i]+'</span></div><div class="bar-t"><i style="width:'+v+'%;background:'+sc[i]+'"></i></div></div><div class="bar-v">'+v+'</div></div>';}).join('');
+  var refs=e.refs.map(function(r){var R=REFS[r];return R?'<div class="ev"><div class="ev-t">'+R.t+'</div><div class="ev-c">'+R.c+'</div></div>':'';}).join('');
+  var alt=EX.filter(function(x){return x.g===e.g&&x.id!==e.id;}).sort(function(a,b){return b.score-a.score;}).slice(0,3);
+  return '<div class="kicker enter">'+g.n+' · '+EQNAME[e.eq]+'</div>'+
+    '<div class="between enter" style="animation-delay:.03s;align-items:flex-start;margin-bottom:12px"><h2 style="font-size:20px;line-height:1.2;max-width:80%">'+e.n+'</h2><span class="tier '+e.tier+'" style="width:38px;height:38px;font-size:17px">'+e.tier+'</span></div>'+
+    '<div class="lab enter" style="animation-delay:.06s">'+
+      '<canvas id="labCanvas" data-act="play" aria-label="Анимация упражнения"></canvas>'+
+      '<div class="lab-hud"><span class="hud-b phase" id="hudPhase">Растяжение</span><span class="hud-b">Повтор <b id="hudReps">0</b> · <b id="hudLoad">'+L.load+'</b> кг</span></div>'+
+      '<div class="lab-foot"><button class="playbtn" id="playBtn" data-act="play" aria-label="Пауза или пуск">'+(L.playing?iconPause():iconPlay())+'</button>'+
+        '<div class="tension"><i id="tensionBar"></i></div><span class="hud-b" id="hudRom">ROM '+L.rom+'%</span></div></div>'+
+    '<div class="ctrls enter" style="animation-delay:.08s">'+
+      '<div class="between" style="margin-bottom:10px"><span class="mono" style="font-size:10.5px;letter-spacing:.16em;color:var(--cyan)">MOTION LAB · живые параметры</span><span class="mono" style="font-size:10px;color:var(--slate-dim)" id="hudTempo">'+tempoStr(L)+'</span></div>'+
+      '<div class="ctrl-grid">'+
+        range('ecc','Эксцентрика',L.ecc,1,5,.5,'с','')+
+        range('pause','Пауза в растяжении',L.pause,0,3,.5,'с','lime')+
+        range('rom','Амплитуда',L.rom,40,100,5,'%','lime')+
+        range('speed','Скорость',L.speed,.25,2,.25,'×','cyan')+
+        range('zoom','Зум',L.zoom,.7,1.6,.05,'×','cyan')+
+        range('angle','Ракурс',L.angle,0,40,2,'°','')+
+        '<div class="ctrl"><div class="ctrl-l"><span>Вес</span><b id="v_load">'+L.load+' кг</b></div>'+
+          '<div class="stepper"><button data-act="load" data-d="-5" aria-label="Меньше">−</button><span id="loadVal">'+L.load+'</span><button data-act="load" data-d="5" aria-label="Больше">+</button></div></div>'+
+        range('conc','Концентрика',L.conc,.5,3,.5,'с','')+
+      '</div>'+
+      '<div class="toggles">'+tgb('glow','Подсветка мышц',L.glow)+tgb('ghost','Скелет',L.ghost)+tgb('trail','След',L.trail)+tgb('grid','Сетка',L.grid)+tgb('stretchOnly','Только растяжение',L.stretchOnly)+'</div>'+
+      '<div class="actions"><button class="btn sm" data-act="labreset">Сброс</button><button class="btn sm" data-act="labrand">Случайно</button>'+
+        '<button class="btn sm lime" data-act="labexport">Экспорт кадра</button>'+
+        '<button class="btn sm ghost" data-act="excopy" data-id="'+e.id+'">Скопировать карточку</button>'+
+        '<button class="btn sm '+(fav?'pri':'')+'" data-act="fav" data-id="'+e.id+'">'+(fav?'★ В избранном':'☆ В избранное')+'</button></div></div>'+
+    '<div class="panel pad enter" style="margin-top:14px;animation-delay:.1s"><h3 style="color:var(--lime);margin-bottom:8px">Почему это работает</h3>'+
+      '<div style="font-size:14px;line-height:1.55">'+e.why+'</div>'+
+      (refs||'<div class="badge-row" style="margin-top:10px"><span class="pill cy">Общий принцип: длина мышцы + профиль нагрузки</span></div>')+'</div>'+
+    '<div class="grid2" style="margin-top:12px">'+
+      '<div class="panel pad"><h3 style="margin-bottom:10px">Вклад пучков</h3><div class="bars">'+actBars+'</div><div style="font-size:11.5px;color:var(--slate-dim);margin-top:9px">Оценка вклада по биомеханике вектора и данным регионарной гипертрофии, не точный ЭМГ-процент.</div></div>'+
+      '<div class="panel pad"><h3 style="margin-bottom:10px">SBL-профиль</h3><div class="bars">'+scoreBars+'</div><div class="between" style="margin-top:10px"><span class="mono" style="font-size:11px;color:var(--slate)">Итог</span><span class="mono" style="font-size:19px;color:var(--lime)">'+e.score+'</span></div></div></div>'+
+    '<div class="panel pad" style="margin-top:12px"><h3 style="color:var(--cyan);margin-bottom:9px">Техника</h3>'+
+      e.cues.map(function(c,i){return '<div class="row" style="align-items:flex-start;margin-bottom:7px"><span class="mono" style="color:var(--lime);font-size:12px">0'+(i+1)+'</span><span style="font-size:13.5px">'+c+'</span></div>';}).join('')+
+      '<div class="note bad" style="margin-top:10px"><span>✕</span><div><b>Частая ошибка:</b> '+e.mistake+'</div></div>'+
+      '<div class="note info" style="margin-top:9px"><span>◎</span><div>Дозировка: <b>2–4 рабочих подхода</b>, <b>1–3 повтора в запасе</b>, 6–15 повторов, отдых 2–3 мин. Недельный объём на мышцу — от 10 подходов.</div></div>'+
+      '<div class="badge-row"><span class="pill lime">Refalo 2023</span><span class="pill lime">Schoenfeld 2017</span><span class="pill lime">Krieger 2010</span></div></div>'+
+    '<div class="between" style="margin:16px 0 8px"><h3>Заменить на</h3><button class="linkbtn" data-act="group" data-g="'+e.g+'">Все · '+g.n+' →</button></div>'+
+    '<div class="exlist">'+alt.map(function(x,i){return exCard(x,i,false);}).join('')+'</div>';
+}
+function macroRow(n,c,g,kcal,perKg,note,ref){
+  return '<div class="macro-row"><span class="macro-dot" style="background:'+c+'"></span>'+
+    '<div><div class="macro-n">'+n+'</div><div class="macro-s">'+Math.round(kcal)+' ккал · '+num(perKg,2)+' г/кг'+(ref?' · '+(REFLABEL[ref]||ref):'')+'</div>'+
+    '<div style="font-size:12px;color:var(--slate);margin-top:4px;line-height:1.45">'+note+'</div></div>'+
+    '<div class="macro-g" style="color:'+c+'">'+Math.round(g)+'<small>грамм</small></div></div>';
+}
+function mini(v,l,c){return '<div class="mini"><div class="mini-v" style="color:'+c+'">'+v+'</div><div class="mini-l">'+l+'</div></div>';}
+function scrCalc(p){
+  var goal=p.goal||profile.goal;profile.goal=goal;
+  var gg=GOALS[goal];
+  var actOpts=ACTS.map(function(a){return '<option value="'+a.v+'"'+(Math.abs(profile.act-a.v)<0.001?' selected':'')+'>'+a.n+'</option>';}).join('');
+  var expOpts=Object.keys(EXPN).map(function(k){return '<option value="'+k+'"'+(profile.exp===k?' selected':'')+'>'+EXPN[k]+'</option>';}).join('');
+  return '<div class="kicker enter">Раздел 02 · Расчёт КБЖУ</div>'+
+    '<h2 class="enter" style="animation-delay:.03s;margin-bottom:6px">'+gg.n+'</h2>'+
+    '<p class="enter" style="animation-delay:.05s;color:var(--slate);font-size:13.5px;margin:0 0 12px">'+gg.lead+'</p>'+
+    '<div class="seg '+(goal==='gain'?'lime':(goal==='rec'?'cyanb':''))+' enter" style="animation-delay:.07s;margin-bottom:14px">'+
+      ['cut','gain','rec'].map(function(k){return '<button class="'+(goal===k?'on':'')+'" data-act="goal" data-v="'+k+'">'+GOALS[k].n+'</button>';}).join('')+'</div>'+
+    '<div class="panel pad enter" style="animation-delay:.09s">'+
+      '<div class="between" style="margin-bottom:11px"><h3 style="color:var(--cyan)">Профиль · считается вживую</h3><button class="linkbtn" data-act="calcrand">Пример</button></div>'+
+      '<div class="ctrl-grid">'+
+        '<div class="ctrl"><div class="ctrl-l"><span>Пол</span></div><div class="seg" style="padding:3px">'+
+          '<button class="'+(profile.sex==='m'?'on':'')+'" data-act="sex" data-v="m" style="padding:7px 4px;font-size:11.5px">М</button>'+
+          '<button class="'+(profile.sex==='f'?'on':'')+'" data-act="sex" data-v="f" style="padding:7px 4px;font-size:11.5px">Ж</button></div></div>'+
+        '<div class="ctrl"><div class="ctrl-l"><span>Возраст</span><b>'+profile.age+'</b></div><div class="stepper"><button data-act="step" data-k="age" data-d="-1">−</button><span>'+profile.age+'</span><button data-act="step" data-k="age" data-d="1">+</button></div></div>'+
+        '<div class="ctrl"><div class="ctrl-l"><span>Тренировок/нед</span><b>'+profile.days+'</b></div><div class="stepper"><button data-act="step" data-k="days" data-d="-1">−</button><span>'+profile.days+'</span><button data-act="step" data-k="days" data-d="1">+</button></div></div>'+
+        range('height','Рост',profile.height,140,210,1,'см','cyan')+
+        range('weight','Вес',profile.weight,40,170,.5,'кг','')+
+        range('bf','Жир',profile.bf,5,50,.5,'%','lime')+
+      '</div>'+
+      '<div class="toggles" style="margin-top:10px"><button class="tg '+(profile.bfKnown?'on':'')+'" data-act="bfk"><i></i>Знаю % жира</button>'+
+        '<span class="pill" style="align-self:center">'+(profile.bfKnown?'Katch–McArdle':'Mifflin–St Jeor')+'</span></div>'+
+      '<div class="grid2" style="margin-top:12px">'+
+        '<div class="ctrl"><div class="ctrl-l"><span>Активность вне зала</span></div><select data-bind="act">'+actOpts+'</select></div>'+
+        '<div class="ctrl"><div class="ctrl-l"><span>Стаж</span></div><select data-bind="exp">'+expOpts+'</select></div></div>'+
+      '<div class="ctrl" style="margin-top:12px"><div class="ctrl-l"><span>Темп</span><b id="tempoLabel">—</b></div>'+
+        '<input type="range" min="0" max="100" step="5" value="'+profile.tempo+'" data-bind="tempo" aria-label="Темп">'+
+        '<div class="cap"><i id="capMark" style="left:50%"></i></div><div class="cap-l" id="capLabel">потолок по исследованиям</div></div>'+
+      '<div class="actions"><button class="btn sm" data-act="calcreset">Сброс</button><button class="btn sm lime" data-act="saveplan">Сохранить план</button>'+
+        '<button class="btn sm" data-act="copyplan">Скопировать</button><button class="btn sm" data-act="dlplan">Скачать .txt</button>'+
+        '<button class="btn sm ghost" data-act="sendplan">В чат Telegram</button></div></div>'+
+    '<div id="calcOut" style="margin-top:14px"></div>'+
+    '<div class="panel pad" style="margin-top:14px"><div class="between" style="margin-bottom:10px"><h3>Мои планы</h3><span class="mono" style="font-size:11px;color:var(--slate-dim)">'+S.plans.length+' сохранено</span></div><div id="planList" class="stack"></div></div>'+
+    '<div class="panel pad" style="margin-top:14px"><h3 style="color:var(--cyan);margin-bottom:8px">Правило коррекции</h3><div style="font-size:13.5px;color:var(--slate);line-height:1.55" id="adjustText"></div>'+
+      '<div class="badge-row"><span class="pill cy">Trexler 2014</span><span class="pill cy">Helms 2014</span></div></div>'+
+    '<div class="panel pad" style="margin-top:14px"><div class="between"><h3>Откуда цифры</h3><button class="linkbtn" data-act="refs">Все источники →</button></div>'+
+      '<div class="ev"><div class="ev-t">Обмен покоя считается по Mifflin–St Jeor, а при известном % жира — по Katch–McArdle (по сухой массе).</div><div class="ev-c">Mifflin 1990 · Am J Clin Nutr</div></div>'+
+      '<div class="ev"><div class="ev-t">Белок на наборе не «чем больше, тем лучше»: анаболический ответ выходит на плато около 1,6 г/кг, верхняя граница доверительного интервала — 2,2 г/кг.</div><div class="ev-c">Morton 2018 · мета-анализ 49 РКИ</div></div>'+
+      '<div class="ev"><div class="ev-t">На дефиците белок считают на сухую массу: 2,3–3,1 г/кг СМТ. Темп снижения — 0,5–1% массы в неделю, для уже сухих ближе к 0,5%.</div><div class="ev-c">Helms 2014 · J Int Soc Sports Nutr</div></div>'+
+      '<div class="ev"><div class="ev-t">Профицит 10–20% и темп 0,25–0,5% массы в неделю: более быстрый набор увеличивает долю жира без прироста мышц.</div><div class="ev-c">Iraki 2019 · Sports; Garthe 2013</div></div></div>';
+}
+function calcOutHTML(r,goal){
+  var gg=GOALS[goal],total=r.pkcal+r.fkcal+r.ckcal;
+  var pp=r.pkcal/total,fp=r.fkcal/total,cp=r.ckcal/total,R=54,C=2*Math.PI*R;
+  function arc(frac,off,col){
+    return '<circle cx="70" cy="70" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="17" stroke-dasharray="'+(frac*C).toFixed(2)+' '+C.toFixed(2)+'" stroke-dashoffset="'+(-off*C).toFixed(2)+'" transform="rotate(-90 70 70)"/>';
+  }
+  var warn=r.warnings.map(function(w){return '<div class="note '+w.t+'" style="margin-top:9px"><span>!</span><div>'+w.m+'</div></div>';}).join('');
+  var capNote=r.capped?'<div class="note warn" style="margin-top:10px"><span>⚑</span><div><b>Темп ограничен.</b> Ты просишь быстрее, но данные говорят: выше '+num(r.capVal,2)+(goal==='cut'?'% массы/нед':'% профицита')+' отдача падает, а риск потери мышц или набора жира растёт. Приложение оставило достаточный уровень.</div></div>':'';
+  var energy=[['Обмен покоя',r.rmr,'#12475C'],['Активность',r.neat,'#9B7BFF'],['Тренировки',r.trainDay,'#37D9F0'],[goal==='gain'?'Профицит':'Дефицит',Math.abs(r.delta),goal==='gain'?'#C4F53C':'#FF3B47']];
+  var esum=energy.reduce(function(s,x){return s+x[1];},0)||1,ebars='',acc=0;
+  energy.forEach(function(x){var w=x[1]/esum*100;ebars+='<rect x="'+acc.toFixed(2)+'%" y="0" width="'+w.toFixed(2)+'%" height="22" fill="'+x[2]+'"/>';acc+=w;});
+  var wmax=Math.max.apply(null,r.weeks.map(function(w){return w.w;}));
+  var wmin=Math.min.apply(null,r.weeks.map(function(w){return w.f;}));
+  var pad=(wmax-wmin)*0.15+1;
+  function px(i){return 8+i*(292/12);}
+  function py(v){return 96-((v-(wmin-pad))/((wmax+pad)-(wmin-pad)))*84;}
+  function poly(key){return r.weeks.map(function(w,i){return px(i).toFixed(1)+','+py(w[key]).toFixed(1);}).join(' ');}
+  var band='M'+r.weeks.map(function(w,i){return px(i).toFixed(1)+','+py(w.w*1.012).toFixed(1);}).join(' L')+' L'+
+    r.weeks.slice().reverse().map(function(w,i){return px(12-i).toFixed(1)+','+py(w.w*0.988).toFixed(1);}).join(' L')+' Z';
+  var meals='';
+  for(var m=0;m<4;m++){
+    meals+='<div style="flex:1"><div style="height:64px;display:flex;align-items:flex-end"><div style="width:100%;height:'+clamp(r.mealP/60*100,12,100)+'%;background:linear-gradient(180deg,#FF7A82,#B3121F);border-radius:5px 5px 0 0"></div></div>'+
+      '<div class="mono" style="font-size:10px;color:var(--slate-dim);text-align:center;margin-top:5px">приём '+(m+1)+'</div>'+
+      '<div class="mono" style="font-size:12px;color:var(--bone);text-align:center">'+r.mealP+' г</div></div>';
+  }
+  return '<div class="kcal-hero enter" style="--hero-accent:'+gg.accent+'">'+
+      '<div class="row" style="align-items:flex-start;justify-content:space-between">'+
+        '<div><div class="kcal-n">'+Math.round(r.kcal)+'</div><div class="kcal-u">ккал / сутки · '+gg.n+'</div>'+
+        '<div class="delta">'+(r.delta>=0?'+':'−')+Math.abs(Math.round(r.delta))+' ккал к поддержке ('+Math.round(r.tdee)+')</div></div>'+
+        '<svg viewBox="0 0 140 140" width="118" height="118" style="flex:0 0 auto">'+
+          '<circle cx="70" cy="70" r="54" fill="none" stroke="#0E2029" stroke-width="17"/>'+
+          arc(pp,0,'#FF3B47')+arc(fp,pp,'#FFB23C')+arc(cp,pp+fp,'#C4F53C')+
+          '<text x="70" y="66" text-anchor="middle" fill="#F4EDE4" font-family="IBM Plex Mono,monospace" font-size="15">'+Math.round(r.kcal)+'</text>'+
+          '<text x="70" y="82" text-anchor="middle" fill="#8FA7B4" font-family="IBM Plex Mono,monospace" font-size="8.5">ККАЛ</text></svg></div></div>'+
+    capNote+warn+
+    '<div class="panel pad" style="margin-top:12px"><h3 style="margin-bottom:6px">Макросы — ровно достаточно</h3>'+
+      macroRow('Белок','#FF3B47',r.protein,r.pkcal,r.pPerKg,r.proteinNote,r.proteinRef)+
+      macroRow('Жиры','#FFB23C',r.fat,r.fkcal,r.fPerKg,r.fatNote,null)+
+      macroRow('Углеводы','#C4F53C',r.carbs,r.ckcal,r.cPerKg,'Остаток калорий после белка и жиров — топливо для тренировок.',null)+'</div>'+
+    '<div class="mini-grid" style="margin-top:12px">'+mini(num(r.fiber,0)+' г','Клетчатка','#33E08D')+mini(num(r.water/1000,1)+' л','Вода','#37D9F0')+mini('3–5 г','Креатин','#9B7BFF')+mini(num(Math.abs(r.expectWeek),2)+' кг','Темп / нед','#FFB23C')+'</div>'+
+    '<div class="chartbox" style="margin-top:12px"><div class="between" style="margin-bottom:9px"><h3>Куда уходит энергия</h3><span class="mono" style="font-size:11px;color:var(--slate-dim)">'+Math.round(r.tdee)+' ккал</span></div>'+
+      '<svg viewBox="0 0 100 22" preserveAspectRatio="none" height="22" style="border-radius:6px;overflow:hidden">'+ebars+'</svg>'+
+      '<div class="legend">'+energy.map(function(x){return '<span><i style="background:'+x[2]+'"></i>'+x[0]+' '+Math.round(x[1])+'</span>';}).join('')+'</div>'+
+      '<div class="mono" style="font-size:10.5px;color:var(--slate-dim);margin-top:8px">'+r.rmrMethod+' · тренировка ≈'+Math.round(r.trainPerSession)+' ккал × '+profile.days+'/нед</div></div>'+
+    '<div class="chartbox" style="margin-top:12px"><div class="between" style="margin-bottom:9px"><h3>Прогноз на 12 недель</h3><span class="mono" style="font-size:10px;color:var(--slate-dim)">модель, не гарантия</span></div>'+
+      '<svg viewBox="0 0 300 104"><g stroke="#17323F" stroke-width=".6">'+[0,1,2,3].map(function(i){return '<line x1="8" y1="'+(12+i*28)+'" x2="300" y2="'+(12+i*28)+'"/>';}).join('')+'</g>'+
+      '<path d="'+band+'" fill="rgba(55,217,240,.13)"/>'+
+      '<polyline points="'+poly('w')+'" fill="none" stroke="#37D9F0" stroke-width="2.2" stroke-linejoin="round"/>'+
+      '<polyline points="'+poly('l')+'" fill="none" stroke="#C4F53C" stroke-width="1.8" stroke-dasharray="4 3"/>'+
+      '<polyline points="'+poly('f')+'" fill="none" stroke="#FF4FA8" stroke-width="1.8" stroke-dasharray="2 3"/>'+
+      '<text x="8" y="103" fill="#5E7684" font-family="IBM Plex Mono,monospace" font-size="7">нед 0</text>'+
+      '<text x="272" y="103" fill="#5E7684" font-family="IBM Plex Mono,monospace" font-size="7">нед 12</text></svg>'+
+      '<div class="legend"><span><i style="background:#37D9F0"></i>Масса '+num(r.weeks[12].w,1)+' кг</span><span><i style="background:#C4F53C"></i>Сухая '+num(r.weeks[12].l,1)+' кг</span><span><i style="background:#FF4FA8"></i>Жир '+num(r.weeks[12].f,1)+' кг</span></div></div>'+
+    '<div class="panel pad" style="margin-top:12px"><div class="between" style="margin-bottom:10px"><h3>Белок по приёмам</h3><span class="pill lime">≈0,4 г/кг × 4</span></div>'+
+      '<div style="display:flex;gap:9px">'+meals+'</div>'+
+      '<div style="font-size:12.5px;color:var(--slate);margin-top:10px">Равномерное распределение работает лучше, чем весь белок за ужином. Порог одного приёма — около 0,4 г/кг массы тела.</div>'+
+      '<div class="badge-row"><span class="pill cy">Schoenfeld &amp; Aragon 2018</span></div></div>'+
+    '<div class="note ok" style="margin-top:12px"><span>✓</span><div><b>Больше — не лучше.</b> Эти цифры — достаточный уровень, а не максимум. Добавка сверху не ускоряет результат, но добавляет усталость, жир и проблемы с соблюдением режима.</div></div>';
+}
+function planText(r,p){
+  return ['SBL · '+GOALS[p.goal].n.toUpperCase(),
+    'Профиль: '+(p.sex==='m'?'мужчина':'женщина')+', '+p.age+' лет, '+p.height+' см, '+num(p.weight,1)+' кг'+(p.bfKnown?', жир '+num(p.bf,1)+'%':'')+', '+p.days+' силовых/нед, '+EXPN[p.exp],'',
+    'Калории: '+Math.round(r.kcal)+' ккал/сут (поддержка '+Math.round(r.tdee)+', '+(r.delta>=0?'+':'')+Math.round(r.delta)+')',
+    'Белок: '+Math.round(r.protein)+' г ('+num(r.pPerKg,2)+' г/кг)',
+    'Жиры: '+Math.round(r.fat)+' г ('+num(r.fPerKg,2)+' г/кг)',
+    'Углеводы: '+Math.round(r.carbs)+' г ('+num(r.cPerKg,2)+' г/кг)',
+    'Клетчатка: '+Math.round(r.fiber)+' г · Вода: '+num(r.water/1000,1)+' л · Креатин 3–5 г',
+    'Белок по приёмам: '+r.mealP+' г × 4',
+    'Ожидаемый темп: '+num(r.expectWeek,2)+' кг/нед','',
+    'Коррекция через 14 дней: если темп отличается — изменить рацион на ±'+r.adjust+' ккал.','',
+    'Основания: Mifflin 1990 / Morton 2018 / Helms 2014 / Iraki 2019 / Barakat 2020.'].join('\n');
+}
+function renderPlans(){
+  var box=$('#planList');if(!box)return;
+  if(!S.plans.length){box.innerHTML='<div class="empty" style="padding:18px">Пока пусто. Настрой профиль и нажми «Сохранить план» — он появится здесь и переживёт перезапуск.</div>';return;}
+  box.innerHTML=S.plans.map(function(pl,i){
+    var gg=GOALS[pl.p.goal]||GOALS.cut;
+    return '<div class="planrow"><span class="macro-dot" style="background:'+gg.accent+'"></span>'+
+      '<button class="nm" data-act="loadplan" data-i="'+i+'">'+esc(pl.n)+'</button>'+
+      '<span class="mono" style="font-size:11px;color:var(--slate-dim)">'+pl.kcal+'</span>'+
+      '<button class="iconbtn" data-act="renameplan" data-i="'+i+'" aria-label="Переименовать">✎</button>'+
+      '<button class="iconbtn danger" data-act="delplan" data-i="'+i+'" aria-label="Удалить">✕</button></div>';}).join('');
+}
+function updateCalc(){
+  var out=$('#calcOut');if(!out)return;
+  var r=compute(profile);
+  out.innerHTML=calcOutHTML(r,profile.goal);
+  var tl=$('#tempoLabel'),cm=$('#capMark'),cl=$('#capLabel');
+  if(profile.goal==='cut'){
+    if(tl)tl.textContent=num(r.rate,2)+'% массы/нед';
+    if(cm)cm.style.left=clamp(r.capVal/1.2*100,0,100)+'%';
+    if(cl)cl.textContent='потолок '+num(r.capVal,2)+'%/нед · '+(r.capped?'ограничено приложением':'в пределах данных');
+  }else if(profile.goal==='gain'){
+    if(tl)tl.textContent='+'+num(r.pct,1)+'% к поддержке';
+    if(cm)cm.style.left=clamp(r.capVal/22*100,0,100)+'%';
+    if(cl)cl.textContent='потолок +'+num(r.capVal,0)+'% · '+(r.capped?'ограничено приложением':'в пределах данных');
+  }else{
+    if(tl)tl.textContent='−'+num(r.pct,1)+'% от поддержки';
+    if(cm)cm.style.left=clamp(r.capVal/16*100,0,100)+'%';
+    if(cl)cl.textContent='потолок −'+num(r.capVal,0)+'% · '+(r.capped?'ограничено приложением':'в пределах данных');
+  }
+  var at=$('#adjustText');
+  if(at){
+    at.innerHTML='Взвешивайся утром натощак 3–7 раз в неделю и смотри <b style="color:var(--bone)">среднее за неделю</b>, а не отдельные дни.<br><br>'+
+      'Через <b style="color:var(--bone)">14 дней</b>: целевой темп — <b style="color:var(--lime)">'+num(Math.abs(r.expectWeek),2)+' кг/нед</b>. '+
+      'Если фактический темп заметно медленнее — измени рацион на <b style="color:var(--bone)">'+r.adjust+' ккал</b> (это ≈'+Math.round(r.adjust/4)+' г углеводов) в нужную сторону. Если быстрее — верни эти калории обратно.<br><br>'+
+      'Не режь калории каждый раз, когда вес встал на 3 дня: сначала проверь сон, шаги, соль и точность подсчёта.';
+  }
+  store.set('profile',profile);cloudSave('profile',profile);
+}
+
+/* ---------- render ---------- */
+var SCREENS={home:scrHome,muscles:scrMuscles,group:scrGroup,ex:scrEx,calc:scrCalc};
+var TITLES={home:'<span class="tb-mark">S<span>B</span>L</span>',muscles:'Упражнение',group:'Группа мышц',ex:'Motion Lab',calc:'КБЖУ'};
+var labCanvas=null,labCtx=null,labW=0,labH=0,dpr=1;
+function render(){
+  var c=cur();
+  if(c.id==='ex'){
+    if(!S.lab||S.lab.id!==c.p.id){
+      var prev=S.lab;
+      S.lab={id:c.p.id,playing:true,ecc:3,pause:1,conc:1,rom:100,speed:1,zoom:1,angle:12,load:40,
+        glow:true,ghost:false,trail:true,grid:true,stretchOnly:false,phase:0,reps:0,trailPts:[],lastSeg:-1};
+      if(prev)['ecc','pause','conc','rom','speed','zoom','angle','glow','ghost','trail','grid','stretchOnly'].forEach(function(k){S.lab[k]=prev[k];});
+    }
+  }else S.lab=null;
+  if(c.id==='group')S.anatSide=null;
+  labCanvas=null;labCtx=null;
+  app.innerHTML=(SCREENS[c.id]||scrHome)(c.p||{});
+  $('#tbTitle').innerHTML=(c.id==='group'&&G[c.p.g])?G[c.p.g].n:(c.id==='ex'&&EXBY[c.p.id]?EXBY[c.p.id].n:TITLES[c.id]);
+  $('#backBtn').hidden=S.stack.length<2;
+  tgBackSync(S.stack.length);
+  scrollTop();
+  if(c.id==='muscles')renderSearchOut();
+  if(c.id==='calc'){updateCalc();renderPlans();}
+  if(c.id==='ex'){
+    labCanvas=$('#labCanvas');
+    if(labCanvas){labCtx=labCanvas.getContext('2d');sizeCanvas();}
+  }
+  syncRails();
+}
+function syncRails(){
+  var items=[['muscles','Упражнение'],['calc-cut','Для сушки'],['calc-gain','Набор'],['calc-rec','Рекомпозиция'],['favs','Избранное']];
+  var c=cur(),key=c.id==='calc'?('calc-'+profile.goal):(c.id==='muscles'&&S.filter.favOnly?'favs':c.id);
+  var rn=$('#railNav');
+  if(rn)rn.innerHTML=items.map(function(n){
+    var act=(key===n[0])||(n[0]==='muscles'&&(c.id==='group'||c.id==='ex'));
+    return '<button class="'+(act?'active':'')+'" data-act="go" data-to="'+n[0]+'"><i></i>'+n[1]+'</button>';}).join('');
+  var rs=$('#railStats');
+  if(rs)rs.innerHTML='Упражнений: '+EX.length+'<br>Групп: '+GROUPS.length+'<br>Избранное: '+S.favs.length+'<br>Планов: '+S.plans.length+'<br>Источников: '+Object.keys(REFS).length;
+  var rr=$('#railRefs');
+  if(rr&&!rr.dataset.filled){
+    rr.dataset.filled='1';
+    rr.innerHTML=Object.keys(REFS).slice(0,9).map(function(k){
+      return '<button class="rail-ref" data-act="refs">'+REFS[k].c.split('.')[0]+' <b>'+(REFS[k].c.match(/(19|20)\d{2}/)||[''])[0]+'</b></button>';}).join('');
+  }
+}
+
+/* ---------- canvas ---------- */
+function sizeCanvas(){
+  if(!labCanvas)return;
+  var rect=labCanvas.getBoundingClientRect();
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  labW=Math.max(240,rect.width);labH=Math.max(200,rect.height||300);
+  labCanvas.width=Math.round(labW*dpr);labCanvas.height=Math.round(labH*dpr);
+  if(labCtx)labCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+if(window.ResizeObserver){new ResizeObserver(function(){if(labCanvas)sizeCanvas();}).observe(document.body);}
+window.addEventListener('resize',function(){if(labCanvas)sizeCanvas();});
+window.addEventListener('orientationchange',function(){setTimeout(function(){if(labCanvas)sizeCanvas();},250);});
+function hexA(hex,a){
+  var h=hex.replace('#','');
+  if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  return 'rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)+','+a.toFixed(3)+')';
+}
+function mid(a,b){return [(a[0]+b[0])/2,(a[1]+b[1])/2];}
+function musclePoint(h,p){
+  var chest=mid(p.neck,p.hip);
+  if(h.indexOf('chest')===0)return [chest[0]+2,chest[1]-2+(h==='chest_low'?4:(h==='chest_up'?-3:0))];
+  if(h.indexOf('delt')===0)return [p.neck[0]+(h==='delt_post'?-3:3),p.neck[1]+1];
+  if(h==='lats')return [chest[0]-1,chest[1]+4];
+  if(h.indexOf('traps')===0)return [p.neck[0],p.neck[1]+(h==='traps_up'?-2:5)];
+  if(h==='erectors')return [p.hip[0],p.hip[1]-5];
+  if(h.indexOf('bi_')===0||h==='brachialis'||h.indexOf('tri_')===0)return mid(p.neck,p.eA);
+  if(h.indexOf('q_')===0||h.indexOf('ham_')===0)return mid(p.hip,p.kA);
+  if(h.indexOf('gl_')===0)return p.hip;
+  if(h.indexOf('gas_')===0||h==='soleus'||h==='tibialis')return mid(p.kA,p.aA);
+  if(h.indexOf('abs')===0)return [chest[0]+1,chest[1]+8];
+  if(h.indexOf('wr_')===0||h==='brachioradialis')return mid(p.eA,p.wA);
+  if(h.indexOf('add_')===0)return [p.hip[0]+2,p.hip[1]+6];
+  return null;
+}
+function limb(ctx,a,b,w,col,alpha){
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.globalAlpha=alpha==null?1:alpha;
+  ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.globalAlpha=1;
+}
+function drawFigure(ctx,p,o){
+  var cfg=o.cfg,far=o.wire?o.color:'#16333F',near=o.wire?o.color:'#2A5566',acc=o.accent;
+  limb(ctx,p.hip,p.kB,4.4,far,.9);limb(ctx,p.kB,p.aB,3.6,far,.9);
+  limb(ctx,p.neck,p.eB,3.6,far,.9);limb(ctx,p.eB,p.wB,3.0,far,.9);
+  var dx=p.neck[0]-p.hip[0],dy=p.neck[1]-p.hip[1],len=Math.sqrt(dx*dx+dy*dy)||1,nx=-dy/len,ny=dx/len;
+  ctx.beginPath();
+  ctx.moveTo(p.neck[0]+nx*6.2,p.neck[1]+ny*6.2);ctx.lineTo(p.hip[0]+nx*4.6,p.hip[1]+ny*4.6);
+  ctx.lineTo(p.hip[0]-nx*4.6,p.hip[1]-ny*4.6);ctx.lineTo(p.neck[0]-nx*6.2,p.neck[1]-ny*6.2);ctx.closePath();
+  if(o.wire){ctx.strokeStyle=o.color;ctx.lineWidth=.6;ctx.stroke();}
+  else{
+    var tg2=ctx.createLinearGradient(p.neck[0],p.neck[1],p.hip[0],p.hip[1]);
+    tg2.addColorStop(0,'#33697E');tg2.addColorStop(1,'#1B4152');
+    ctx.fillStyle=tg2;ctx.fill();ctx.strokeStyle=hexA(acc,.5);ctx.lineWidth=.5;ctx.stroke();
+  }
+  ctx.beginPath();ctx.arc(p.head[0],p.head[1],4.2,0,6.284);
+  if(o.wire){ctx.strokeStyle=o.color;ctx.lineWidth=.6;ctx.stroke();}
+  else{ctx.fillStyle='#33697E';ctx.fill();ctx.strokeStyle=hexA(acc,.45);ctx.lineWidth=.5;ctx.stroke();}
+  limb(ctx,p.head,p.neck,2.6,near,.9);
+  limb(ctx,p.hip,p.kA,5.0,o.wire?o.color:hexA(acc,.85));
+  limb(ctx,p.kA,p.aA,4.0,o.wire?o.color:hexA(acc,.7));
+  limb(ctx,p.neck,p.eA,4.0,o.wire?o.color:hexA(acc,.95));
+  limb(ctx,p.eA,p.wA,3.3,o.wire?o.color:hexA(acc,.8));
+  var toe=cfg.toe||[p.aA[0]+7,92];
+  if(cfg.toeMove)toe=[toe[0],92-7*(o.t||0)];
+  limb(ctx,p.aA,toe,2.4,near,.95);limb(ctx,p.aB,[p.aB[0]+6,92],2.2,far,.8);
+  if(!o.wire){[p.neck,p.hip,p.kA,p.eA].forEach(function(j){ctx.beginPath();ctx.arc(j[0],j[1],1.05,0,6.284);ctx.fillStyle='rgba(244,237,228,.55)';ctx.fill();});}
+  else{[p.neck,p.hip,p.kA,p.eA,p.wA,p.aA].forEach(function(j){ctx.beginPath();ctx.arc(j[0],j[1],.9,0,6.284);ctx.fillStyle=o.color;ctx.fill();});}
+  if(o.eq)drawEquip(ctx,p,cfg,o);
+}
+function drawEquip(ctx,p,cfg,o){
+  var eq=cfg.eq,load=o.load||40,plateR=2.6+clamp(load,0,200)/200*4.4;
+  ctx.lineCap='round';
+  function plate(c){
+    ctx.beginPath();ctx.arc(c[0],c[1],plateR,0,6.284);ctx.fillStyle='#0E2029';ctx.fill();
+    ctx.strokeStyle='#C4F53C';ctx.lineWidth=.9;ctx.stroke();
+    ctx.beginPath();ctx.arc(c[0],c[1],plateR*.45,0,6.284);ctx.strokeStyle='rgba(196,245,60,.5)';ctx.lineWidth=.5;ctx.stroke();
+  }
+  if(eq==='bar'||eq==='ez')plate(p.wA);
+  else if(eq==='barback'){plate(p.neck);limb(ctx,[p.neck[0]-8,p.neck[1]],[p.neck[0]+8,p.neck[1]],1.1,'#8FA7B4');}
+  else if(eq==='barhip'){plate(p.hip);limb(ctx,[p.hip[0]-8,p.hip[1]],[p.hip[0]+8,p.hip[1]],1.1,'#8FA7B4');}
+  else if(eq==='db'){
+    ctx.save();ctx.translate(p.wA[0],p.wA[1]);ctx.fillStyle='#C4F53C';
+    ctx.fillRect(-plateR*.8,-1.5,plateR*1.6,3);ctx.fillStyle='#8FBF12';
+    ctx.fillRect(-plateR*.8,-2.6,2,5.2);ctx.fillRect(plateR*.8-2,-2.6,2,5.2);ctx.restore();
+  }else if(eq==='cable'&&cfg.anchor){
+    var at=cfg.cableAt==='ankle'?p.aA:p.wA;
+    ctx.strokeStyle='rgba(55,217,240,.85)';ctx.lineWidth=.55;
+    ctx.beginPath();ctx.moveTo(at[0],at[1]);ctx.lineTo(cfg.anchor[0],cfg.anchor[1]);ctx.stroke();
+    ctx.beginPath();ctx.arc(cfg.anchor[0],cfg.anchor[1],1.8,0,6.284);ctx.fillStyle='#0E2029';ctx.fill();
+    ctx.strokeStyle='#37D9F0';ctx.lineWidth=.7;ctx.stroke();
+    var st=cfg.anchor[1]>50?cfg.anchor[1]-2:cfg.anchor[1]+2;
+    ctx.fillStyle='rgba(55,217,240,.25)';ctx.fillRect(cfg.anchor[0]-3,st-1,6,10);
+    ctx.strokeStyle='rgba(55,217,240,.5)';ctx.lineWidth=.35;
+    for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(cfg.anchor[0]-3,st+1+i*2.2);ctx.lineTo(cfg.anchor[0]+3,st+1+i*2.2);ctx.stroke();}
+  }else if(eq==='barfixed'){
+    limb(ctx,[30,cfg.barY],[70,cfg.barY],1.4,'#8FA7B4');
+    ctx.fillStyle='#C4F53C';ctx.fillRect(29,cfg.barY-2,2,4);ctx.fillRect(69,cfg.barY-2,2,4);
+  }else if(eq==='machine'){
+    var pt=cfg.padAnkle?p.aA:(cfg.padKnee?p.kA:p.wA);
+    ctx.fillStyle='rgba(55,217,240,.35)';ctx.fillRect(pt[0]-1.6,pt[1]-2.6,3.2,5.2);
+    ctx.strokeStyle='#37D9F0';ctx.lineWidth=.5;ctx.strokeRect(pt[0]-1.6,pt[1]-2.6,3.2,5.2);
+  }else if(eq==='wheel'){
+    ctx.beginPath();ctx.arc(p.wA[0],p.wA[1],3.4,0,6.284);ctx.strokeStyle='#C4F53C';ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.arc(p.wA[0],p.wA[1],1,0,6.284);ctx.fillStyle='#C4F53C';ctx.fill();
+  }else if(eq==='bars'){
+    limb(ctx,[52,52],[74,52],1.3,'#8FA7B4');limb(ctx,[72,52],[72,92],1.1,'rgba(143,167,180,.6)');
+  }
+}
+function drawProps(ctx,cfg){
+  if(cfg.bench==='flat'){
+    ctx.fillStyle='#12303C';ctx.strokeStyle='#215064';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.rect(24,66,42,3.4);ctx.fill();ctx.stroke();
+    limb(ctx,[28,69],[28,92],1.2,'#16333F');limb(ctx,[62,69],[62,92],1.2,'#16333F');
+  }
+  if(cfg.bench==='incline'){
+    ctx.save();ctx.translate(44,60);ctx.rotate(-0.55);
+    ctx.fillStyle='#12303C';ctx.strokeStyle='#215064';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.rect(-18,-2,36,3.4);ctx.fill();ctx.stroke();ctx.restore();
+    limb(ctx,[48,64],[48,92],1.2,'#16333F');
+  }
+  if(cfg.seat){
+    ctx.fillStyle='#0E2029';ctx.strokeStyle='#215064';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.rect(38,64,18,3);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.rect(36,40,3,26);ctx.fill();ctx.stroke();
+  }
+  if(cfg.sled){ctx.strokeStyle='rgba(55,217,240,.4)';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(20,92);ctx.lineTo(84,40);ctx.stroke();}
+  if(cfg.pad){
+    ctx.fillStyle='#12303C';ctx.strokeStyle='#215064';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.rect(cfg.pad[0],cfg.pad[1],cfg.pad[2]-cfg.pad[0],cfg.pad[3]-cfg.pad[1]);ctx.fill();ctx.stroke();
+  }
+}
+function drawLab(e,t){
+  var L=S.lab,ctx=labCtx,W=labW,H=labH,cfg=T[e.tpl].cfg,p=P(poseAt(e.tpl,t)),accent=G[e.g].accent;
+  ctx.clearRect(0,0,W,H);
+  var bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#08161E');bg.addColorStop(.55,'#05090C');bg.addColorStop(1,'#0B1A22');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  var gl=ctx.createRadialGradient(W*.5,H*.42,10,W*.5,H*.42,H*.85);
+  gl.addColorStop(0,'rgba(18,71,92,.42)');gl.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=gl;ctx.fillRect(0,0,W,H);
+  var scale=Math.min(W/100,H/100)*0.92*L.zoom;
+  ctx.save();ctx.translate(W/2,H/2);ctx.scale(Math.cos(L.angle*Math.PI/180),1);ctx.scale(scale,scale);ctx.translate(-50,-48);
+  if(L.grid){
+    ctx.lineWidth=.25;ctx.strokeStyle='rgba(33,80,100,.55)';ctx.beginPath();
+    for(var gx=0;gx<=100;gx+=10){ctx.moveTo(gx,0);ctx.lineTo(gx,100);}
+    for(var gy=0;gy<=100;gy+=10){ctx.moveTo(0,gy);ctx.lineTo(100,gy);}
+    ctx.stroke();
+    ctx.strokeStyle='rgba(55,217,240,.22)';ctx.lineWidth=.4;
+    ctx.beginPath();ctx.moveTo(50,0);ctx.lineTo(50,100);ctx.moveTo(0,50);ctx.lineTo(100,50);ctx.stroke();
+  }
+  ctx.strokeStyle='rgba(55,217,240,.5)';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(4,92);ctx.lineTo(96,92);ctx.stroke();
+  var fl=ctx.createLinearGradient(0,92,0,100);fl.addColorStop(0,'rgba(18,71,92,.5)');fl.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=fl;ctx.fillRect(4,92,92,8);
+  drawProps(ctx,cfg);
+  if(L.ghost)[0,1].forEach(function(gt){
+    drawFigure(ctx,P(poseAt(e.tpl,gt*(L.rom/100))),{wire:true,color:'rgba(143,167,180,.35)',accent:'rgba(143,167,180,.35)',load:L.load,cfg:cfg,eq:false});
+  });
+  if(L.trail){
+    var wp=cfg.eq==='barback'?p.neck:(cfg.eq==='barhip'?p.hip:(cfg.padAnkle?p.aA:p.wA));
+    L.trailPts.push([wp[0],wp[1]]);
+    if(L.trailPts.length>46)L.trailPts.shift();
+    ctx.lineCap='round';
+    for(var i=1;i<L.trailPts.length;i++){
+      var a=i/L.trailPts.length;
+      ctx.strokeStyle='rgba(196,245,60,'+(a*0.55).toFixed(3)+')';ctx.lineWidth=.3+a*1.1;
+      ctx.beginPath();ctx.moveTo(L.trailPts[i-1][0],L.trailPts[i-1][1]);ctx.lineTo(L.trailPts[i][0],L.trailPts[i][1]);ctx.stroke();
+    }
+  }else if(L.trailPts.length)L.trailPts.length=0;
+  drawFigure(ctx,p,{wire:false,accent:accent,load:L.load,cfg:cfg,eq:true,t:t});
+  if(L.glow){
+    var act=0.45+0.55*(1-t);
+    Object.keys(e.act).forEach(function(h){
+      var w=e.act[h];if(w<0.3)return;
+      var pt=musclePoint(h,p);if(!pt)return;
+      var rr=6+w*7,col=HEADCOLOR[h]||accent;
+      var gr=ctx.createRadialGradient(pt[0],pt[1],0,pt[0],pt[1],rr);
+      gr.addColorStop(0,hexA(col,0.55*w*act));gr.addColorStop(.6,hexA(col,0.18*w*act));gr.addColorStop(1,hexA(col,0));
+      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(pt[0],pt[1],rr,0,6.284);ctx.fill();
+    });
+  }
+  if(t<0.22){
+    ctx.fillStyle='rgba(196,245,60,.9)';ctx.font='600 3.4px "IBM Plex Mono",monospace';ctx.fillText('LENGTHENED',6,8);
+    ctx.strokeStyle='rgba(196,245,60,.55)';ctx.lineWidth=.3;ctx.beginPath();ctx.moveTo(6,9.4);ctx.lineTo(30,9.4);ctx.stroke();
+  }
+  ctx.restore();
+  var vg=ctx.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.85);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+}
+function labTick(dt){
+  var L=S.lab;if(!L||!labCanvas||!labCtx)return;
+  var e=EXBY[L.id];if(!e)return;
+  var total=(L.conc+0.25+L.ecc+L.pause)/L.speed;
+  if(L.playing){
+    L.phase+=dt/total;
+    while(L.phase>=1){L.phase-=1;L.reps++;var hr=$('#hudReps');if(hr)hr.textContent=L.reps;}
+  }
+  var u=L.phase*total*L.speed,t,seg;
+  if(u<L.conc){t=easeIO(u/L.conc);seg=0;}
+  else if(u<L.conc+0.25){t=1;seg=1;}
+  else if(u<L.conc+0.25+L.ecc){t=1-easeIO((u-L.conc-0.25)/L.ecc);seg=2;}
+  else{t=0;seg=3;}
+  if(seg!==L.lastSeg){
+    if(seg===1&&L.playing)Sound.lock();
+    if(seg===3&&L.playing)Sound.stretch();
+    L.lastSeg=seg;
+    var ph=$('#hudPhase');if(ph)ph.textContent=['Концентрика','Пик сокращения','Эксцентрика','Растяжение · пауза'][seg];
+  }
+  drawLab(e,L.stretchOnly?Math.min(t,0.45):t*(L.rom/100));
+  var tb=$('#tensionBar');if(tb)tb.style.width=Math.round((0.35+0.65*(1-t*0.75))*100)+'%';
+}
+var last=0;
+function loop(ts){
+  if(!last)last=ts;
+  var dt=Math.min((ts-last)/1000,0.05);last=ts;
+  if(S.lab&&labCanvas)labTick(dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------- feedback ---------- */
+function toast(msg,kind,undo){
+  var wrap=$('#toasts'),el=document.createElement('div');
+  el.className='toast '+(kind||'');
+  el.innerHTML='<span class="dot"></span><span class="grow">'+msg+'</span>'+(undo?'<button class="undo">Вернуть</button>':'');
+  wrap.appendChild(el);
+  var timer=setTimeout(close,undo?6000:3200);
+  function close(){clearTimeout(timer);el.classList.add('out');setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},260);}
+  if(undo)el.querySelector('.undo').addEventListener('click',function(){undo();close();});
+}
+function openDrawer(){
+  $('#drawerBody').innerHTML='<div class="note info" style="margin-bottom:12px"><span>◎</span><div>Каждая рекомендация в SBL опирается на конкретную работу. Ниже — полный список с выводом на человеческом.</div></div>'+
+    Object.keys(REFS).map(function(k){var R=REFS[k];return '<div class="refitem"><div class="id">'+k+'</div><div class="cite">'+R.c+'</div><div class="take">→ '+R.t+'</div></div>';}).join('');
+  $('#drawer').classList.add('on');$('#scrim').classList.add('on');$('#drawer').setAttribute('aria-hidden','false');haptic('light');
+}
+function closeDrawer(){$('#drawer').classList.remove('on');$('#scrim').classList.remove('on');$('#drawer').setAttribute('aria-hidden','true');}
+function copyText(txt,okMsg){
+  var done=function(){toast(okMsg||'Скопировано в буфер обмена');Sound.chime();haptic('success');};
+  var fail=function(){
+    try{
+      var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();
+    }catch(e){toast('Не удалось скопировать — выдели текст вручную','bad');haptic('error');}
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,fail);else fail();
+}
+function download(name,content){
+  try{
+    var blob=new Blob([content],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);if(a.parentNode)a.parentNode.removeChild(a);},1200);
+    toast('Файл '+name+' отправлен на скачивание');haptic('success');
+  }catch(e){copyText(content,'Скачивание недоступно — текст скопирован');}
+}
+function syncPlayBtn(){var pb=$('#playBtn');if(pb&&S.lab)pb.innerHTML=S.lab.playing?iconPause():iconPlay();}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(ev){
+  var t=ev.target;
+  if(!t||!t.closest)return;
+  var el=t.closest('[data-act]');if(!el)return;
+  var a=el.getAttribute('data-act');
+  if(a!=='play')Sound.tap();
+  switch(a){
+    case 'go':{
+      var to=el.getAttribute('data-to');
+      if(to.indexOf('calc-')===0){profile.goal=to.slice(5);nav('calc',{goal:profile.goal});}
+      else if(to==='favs'){S.filter.favOnly=true;S.filter.q='';S.filter.head=null;nav('muscles',{});}
+      else{if(to==='muscles')S.filter.head=null;nav(to,{});}
+      break;}
+    case 'group':S.filter.head=null;nav('group',{g:el.getAttribute('data-g')});break;
+    case 'ex':nav('ex',{id:el.getAttribute('data-id')});break;
+    case 'head':{
+      var h=el.getAttribute('data-h');
+      S.filter.head=(h&&S.filter.head!==h)?h:null;
+      if(cur().id!=='group'&&h&&HEADGROUP[h]){nav('group',{g:HEADGROUP[h]});S.filter.head=h;render();}
+      else render();
+      break;}
+    case 'side':S.anatSide=el.getAttribute('data-v');render();break;
+    case 'fav':{
+      var id=el.getAttribute('data-id'),i=S.favs.indexOf(id);
+      if(i>=0){S.favs.splice(i,1);toast('Убрано из избранного');}
+      else{S.favs.push(id);toast('Добавлено в избранное ★');haptic('success');}
+      store.set('favs',S.favs);cloudSave('favs',S.favs);render();break;}
+    case 'feq':S.filter.eq=el.getAttribute('data-v');renderSearchOut();break;
+    case 'ftier':S.filter.tier=el.getAttribute('data-v');renderSearchOut();break;
+    case 'ffav':S.filter.favOnly=!S.filter.favOnly;renderSearchOut();syncRails();break;
+    case 'resetf':S.filter={q:'',group:'all',head:null,eq:'all',tier:'all',favOnly:false,sort:'score'};render();break;
+    case 'clearq':S.filter.q='';render();break;
+    case 'goal':profile.goal=el.getAttribute('data-v');cur().p.goal=profile.goal;render();break;
+    case 'sex':profile.sex=el.getAttribute('data-v');render();break;
+    case 'bfk':profile.bfKnown=!profile.bfKnown;render();break;
+    case 'step':{
+      var k=el.getAttribute('data-k'),d=parseFloat(el.getAttribute('data-d'));
+      profile[k]=clamp(profile[k]+d,k==='age'?14:0,k==='age'?80:7);render();break;}
+    case 'calcrand':{
+      profile.sex=Math.random()<.5?'m':'f';
+      profile.age=Math.round(rnd(19,45));profile.height=Math.round(rnd(158,192));
+      profile.weight=Math.round(rnd(55,105)*2)/2;
+      profile.bf=Math.round(rnd(profile.sex==='m'?10:18,profile.sex==='m'?26:36)*2)/2;
+      profile.bfKnown=true;profile.act=ACTS[Math.floor(rnd(0,4))].v;
+      profile.days=Math.round(rnd(2,6));profile.exp=['new','mid','adv'][Math.floor(rnd(0,3))];
+      profile.tempo=Math.round(rnd(0,4))*25;render();toast('Случайный профиль загружен');break;}
+    case 'calcreset':profile=Object.assign({},defProfile,{goal:profile.goal});render();toast('Профиль сброшен');break;
+    case 'saveplan':{
+      var r=compute(profile);
+      S.plans.unshift({n:GOALS[profile.goal].n+' · '+num(profile.weight,1)+' кг · '+new Date().toLocaleDateString('ru-RU'),p:Object.assign({},profile),kcal:Math.round(r.kcal),ts:Date.now()});
+      if(S.plans.length>24)S.plans.pop();
+      store.set('plans',S.plans);cloudSave('plans',S.plans.slice(0,8));
+      renderPlans();syncRails();toast('План сохранён: '+Math.round(r.kcal)+' ккал');Sound.chime();haptic('success');break;}
+    case 'loadplan':{
+      var pl=S.plans[parseInt(el.getAttribute('data-i'),10)];
+      if(pl){profile=Object.assign({},pl.p);cur().p.goal=profile.goal;render();toast('Загружен план «'+pl.n+'»');}
+      break;}
+    case 'renameplan':{
+      var ix=parseInt(el.getAttribute('data-i'),10),old=S.plans[ix].n;
+      var nn=window.prompt('Название плана',old);
+      if(nn&&nn.trim()){S.plans[ix].n=nn.trim().slice(0,60);store.set('plans',S.plans);renderPlans();toast('Переименовано');}
+      break;}
+    case 'delplan':{
+      var di=parseInt(el.getAttribute('data-i'),10),removed=S.plans.splice(di,1)[0];
+      store.set('plans',S.plans);renderPlans();syncRails();haptic('warning');
+      toast('План «'+removed.n+'» удалён','warn',function(){S.plans.splice(di,0,removed);store.set('plans',S.plans);renderPlans();syncRails();toast('Восстановлено');});
+      break;}
+    case 'copyplan':copyText(planText(compute(profile),profile),'План скопирован — можно вставить в заметки');break;
+    case 'dlplan':download('SBL-plan.txt',planText(compute(profile),profile));break;
+    case 'sendplan':{
+      var rr=compute(profile);
+      var payload={type:'sbl_plan',plan:{goal:GOALS[profile.goal].n,kcal:Math.round(rr.kcal),p:Math.round(rr.protein),f:Math.round(rr.fat),c:Math.round(rr.carbs),rate:num(rr.expectWeek,2)}};
+      if(TG&&TG.sendData){try{TG.sendData(JSON.stringify(payload));}catch(e){copyText(planText(rr,profile),'Отправка недоступна из этой кнопки — план скопирован');}}
+      else copyText(planText(rr,profile),'Вне Telegram: план скопирован в буфер');
+      break;}
+    case 'refs':openDrawer();break;
+    case 'play':{if(S.lab){S.lab.playing=!S.lab.playing;syncPlayBtn();Sound.tick();}break;}
+    case 'tg':{
+      var kk=el.getAttribute('data-k');S.lab[kk]=!S.lab[kk];
+      el.classList.toggle('on',S.lab[kk]);
+      if(kk==='trail')S.lab.trailPts.length=0;
+      break;}
+    case 'load':{
+      S.lab.load=clamp(S.lab.load+parseFloat(el.getAttribute('data-d')),0,300);
+      var vl=$('#v_load');if(vl)vl.textContent=S.lab.load+' кг';
+      var lv=$('#loadVal');if(lv)lv.textContent=S.lab.load;
+      var hl=$('#hudLoad');if(hl)hl.textContent=S.lab.load;
+      break;}
+    case 'labreset':{
+      var keep=S.lab.id;
+      S.lab={id:keep,playing:true,ecc:3,pause:1,conc:1,rom:100,speed:1,zoom:1,angle:12,load:40,
+        glow:true,ghost:false,trail:true,grid:true,stretchOnly:false,phase:0,reps:0,trailPts:[],lastSeg:-1};
+      render();toast('Параметры движения сброшены');break;}
+    case 'labrand':{
+      S.lab.ecc=Math.round(rnd(2,8))/2;S.lab.pause=Math.round(rnd(0,6))/2;S.lab.conc=Math.round(rnd(1,5))/2;
+      S.lab.rom=Math.round(rnd(8,20))*5;S.lab.speed=Math.round(rnd(2,6))/4;S.lab.zoom=Math.round(rnd(16,30))/20;
+      S.lab.angle=Math.round(rnd(0,20))*2;S.lab.load=Math.round(rnd(4,24))*5;
+      render();toast('Случайный протокол: '+tempoStr(S.lab));Sound.chime();break;}
+    case 'labexport':{
+      if(!labCanvas){toast('Кадр недоступен','bad');break;}
+      try{
+        var data=labCanvas.toDataURL('image/png'),link=document.createElement('a');
+        link.href=data;link.download='SBL-'+S.lab.id+'-frame.png';
+        document.body.appendChild(link);link.click();document.body.removeChild(link);
+        toast('Кадр сохранён как PNG');Sound.chime();haptic('success');
+      }catch(e){toast('Браузер заблокировал экспорт кадра','bad');haptic('error');}
+      break;}
+    case 'excopy':{
+      var ex=EXBY[el.getAttribute('data-id')];
+      copyText(['SBL · '+ex.n+' [тир '+ex.tier+']','Группа: '+G[ex.g].n,
+        'Пучки: '+ex.heads.map(function(h){return HEADNAME[h]+' '+Math.round(ex.act[h]*100)+'%';}).join(', '),
+        'Почему: '+ex.why,'Техника: '+ex.cues.join('; '),'Ошибка: '+ex.mistake,
+        'Дозировка: 2–4 подхода × 6–15 повторов, 1–3 в запасе, отдых 2–3 мин'].join('\n'),'Карточка упражнения скопирована');
+      break;}
+  }
+});
+document.addEventListener('input',function(ev){
+  var el=ev.target,b=el.getAttribute&&el.getAttribute('data-bind');
+  if(!b)return;
+  if(b==='q'){S.filter.q=el.value;renderSearchOut();return;}
+  if(b==='sort'){S.filter.sort=el.value;renderSearchOut();return;}
+  if(S.lab&&['ecc','pause','conc','rom','speed','zoom','angle'].indexOf(b)>=0){
+    S.lab[b]=parseFloat(el.value);
+    var u={ecc:'с',pause:'с',conc:'с',rom:'%',speed:'×',zoom:'×',angle:'°'};
+    var lab=$('#v_'+b);
+    if(lab)lab.textContent=trim(S.lab[b],2)+' '+u[b];
+    if(b==='rom'){var hr=$('#hudRom');if(hr)hr.textContent='ROM '+S.lab.rom+'%';}
+    if(b==='ecc'||b==='pause'||b==='conc'){var ht=$('#hudTempo');if(ht)ht.textContent=tempoStr(S.lab);}
+    if(b==='rom'||b==='angle')S.lab.trailPts.length=0;
+    return;
+  }
+  if(['height','weight','bf','tempo','act'].indexOf(b)>=0){
+    profile[b]=parseFloat(el.value);
+    var lbl=el.parentNode.querySelector('.ctrl-l b'),un={height:'см',weight:'кг',bf:'%'};
+    if(lbl&&b!=='tempo')lbl.textContent=trim(profile[b],1)+' '+un[b];
+    updateCalc();return;
+  }
+  if(b==='exp'){profile.exp=el.value;updateCalc();}
+});
+document.addEventListener('change',function(ev){
+  var el=ev.target,b=el.getAttribute&&el.getAttribute('data-bind');
+  if(b==='act'){profile.act=parseFloat(el.value);updateCalc();}
+  if(b==='exp'){profile.exp=el.value;updateCalc();}
+});
+$('#backBtn').addEventListener('click',function(){nav.back();});
+$('#refBtn').addEventListener('click',function(){Sound.tap();openDrawer();});
+$('#drawerClose').addEventListener('click',closeDrawer);
+$('#scrim').addEventListener('click',closeDrawer);
+$('#soundBtn').addEventListener('click',function(){
+  var on=Sound.toggle();
+  this.classList.toggle('on',on);this.classList.toggle('off',!on);
+  this.setAttribute('aria-label',on?'Звук включён':'Звук выключен');
+  $$('.wave',this).forEach(function(w){w.style.opacity=on?1:0.15;});
+  toast(on?'Звук включён':'Звук выключен');
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closeDrawer();
+  if(e.key===' '&&S.lab&&e.target===document.body){e.preventDefault();S.lab.playing=!S.lab.playing;syncPlayBtn();}
+});
+document.addEventListener('visibilitychange',function(){if(document.hidden&&S.lab){S.lab.playing=false;syncPlayBtn();}});
+
+/* ---------- boot ---------- */
+tgInit();
+(function(){
+  var b=$('#soundBtn'),on=Sound.isOn();
+  b.classList.toggle('on',on);b.classList.toggle('off',!on);
+  $$('.wave',b).forEach(function(w){w.style.opacity=on?1:0.15;});
+})();
+render();
+if(TG&&TG.CloudStorage&&TG.CloudStorage.getItem){
+  try{
+    TG.CloudStorage.getItem('sbl_profile',function(err,val){
+      if(!err&&val){try{var p=JSON.parse(val);if(p&&typeof p.weight==='number'){profile=Object.assign({},profile,p);if(cur().id==='calc')render();}}catch(e){}}
+    });
+  }catch(e){}
+}
+setTimeout(function(){
+  if(!store.get('seen',false)){store.set('seen',true);toast('SBL готов. Начни с «Упражнение» — там пучки мышц и анимации.');}
+},900);
+})();
+</script>
+</body>
+</html>
